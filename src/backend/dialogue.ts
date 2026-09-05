@@ -1,6 +1,8 @@
 import * as vscode from 'vscode';
 import { StorageManager } from './storage';
 import { streamChat } from './api';
+import { buildReportMarkdown } from './report';
+import { buildWebContext } from './web';
 import { MaoxuanConfig, SessionData, ChatMessage, DialoguePhase } from '../types';
 import { PHASE_LABELS } from '../constants';
 
@@ -65,8 +67,10 @@ export class DialogueManager {
 
   /**
    * 发送用户消息
+   * @param content 用户输入
+   * @param options.webSearch 是否开启联网搜索（默认取全局设置）
    */
-  async sendMessage(content: string): Promise<void> {
+  async sendMessage(content: string, options?: { webSearch?: boolean }): Promise<void> {
     if (!this.currentSession) {
       throw new Error('没有活跃的对话会话');
     }
@@ -107,12 +111,34 @@ export class DialogueManager {
     // 不把刚加入的最后一条用户消息算入历史（它在 messages 末尾）——实际上 DeepSeek 需要它，所以保留
     const currentPhase = this.currentSession.currentPhase;
 
+    // 联网能力：消息含链接时抓取网页正文；开启联网搜索时检索网络信息（失败不影响对话）
+    let apiMessages = messages.filter((m) => m.role !== 'system'); // system prompt 由 api.ts 注入
+    const wantSearch = options?.webSearch ?? config.webSearchEnabled;
+    const hasUrls = /https?:\/\//i.test(content);
+    let webContext = '';
+    if (wantSearch || hasUrls) {
+      try {
+        webContext = await buildWebContext(content, config.searchEngine, config.searchApiKey, wantSearch);
+      } catch {
+        webContext = ''; // 联网失败静默降级，对话照常
+      }
+    }
+    if (webContext) {
+      const last = apiMessages[apiMessages.length - 1];
+      if (last && last.role === 'user') {
+        apiMessages = [
+          ...apiMessages.slice(0, -1),
+          { ...last, content: last.content + webContext },
+        ];
+      }
+    }
+
     return new Promise((resolve, reject) => {
       let fullResponse = '';
 
       this.abortController = streamChat(
         effectiveConfig,
-        messages.filter(m => m.role !== 'system'), // system prompt 由 api.ts 注入
+        apiMessages,
         currentPhase,
         (chunk: string) => {
           fullResponse += chunk;
@@ -301,38 +327,12 @@ export class DialogueManager {
   }
 
   /**
-   * 生成对话总结报告
+   * 生成对话总结报告（专业结构化：问题概述 → 多维度分析 → 结论建议 → 执行检验）
    */
   generateReport(): string {
     if (!this.currentSession || this.currentSession.messages.length === 0) {
       return '暂无对话内容，无法生成报告。';
     }
-
-    const session = this.currentSession;
-    const date = new Date(session.createdAt).toLocaleString('zh-CN');
-    const assistantMessages = session.messages.filter(m => m.role === 'assistant');
-    
-    let report = `# ${session.title}\n\n`;
-    report += `> 生成时间：${new Date().toLocaleString('zh-CN')}\n`;
-    report += `> 对话创建：${date}\n`;
-    report += `> 消息总数：${session.messages.length} 条\n`;
-    report += `> 当前阶段：${PHASE_LABELS[session.currentPhase] || session.currentPhase}\n\n`;
-    report += `---\n\n`;
-
-    // 按阶段整理内容
-    const phases: DialoguePhase[] = ['understanding', 'contradiction', 'condition', 'strategy', 'tactics', 'reflection'];
-    
-    for (const phase of phases) {
-      const phaseMessages = assistantMessages.filter(m => m.phase === phase);
-      if (phaseMessages.length === 0) continue;
-
-      report += `## ${PHASE_LABELS[phase] || phase}\n\n`;
-      for (const msg of phaseMessages) {
-        report += `${msg.content}\n\n`;
-      }
-      report += `---\n\n`;
-    }
-
-    return report;
+    return buildReportMarkdown(this.currentSession);
   }
 }

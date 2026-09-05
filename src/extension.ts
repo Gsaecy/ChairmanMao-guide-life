@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import { StorageManager } from './backend/storage';
 import { DialogueManager } from './backend/dialogue';
+import { exportReportFile } from './backend/report';
 import { ChatPanel, ChatViewProvider, SettingsPanel, HistoryPanel } from './panels';
 
 let storageManager: StorageManager;
@@ -16,8 +17,20 @@ export async function activate(context: vscode.ExtensionContext) {
   await storageManager.init();
   dialogueManager = new DialogueManager(storageManager);
 
-  // 注册侧边栏 WebviewView Provider —— 解决侧边栏空白问题
-  chatViewProvider = new ChatViewProvider(context.extensionUri, storageManager, dialogueManager);
+  // 注册侧边栏 WebviewView Provider
+  chatViewProvider = new ChatViewProvider(context.extensionUri, storageManager, dialogueManager, (sessionId) => {
+    try {
+      const session = dialogueManager.loadSession(sessionId);
+      if (session) {
+        chatPanel = createOrShowChatPanel(context);
+        chatPanel.loadSession(session);
+      } else {
+        vscode.window.showErrorMessage('加载对话失败，该对话可能已被删除。');
+      }
+    } catch (err) {
+      vscode.window.showErrorMessage(`加载对话失败: ${err}`);
+    }
+  });
   context.subscriptions.push(
     vscode.window.registerWebviewViewProvider(ChatViewProvider.viewType, chatViewProvider)
   );
@@ -33,23 +46,15 @@ export async function activate(context: vscode.ExtensionContext) {
   });
 
   const openSettingsCmd = vscode.commands.registerCommand('maoxuan-guidance.openSettings', () => {
-    if (settingsPanel) {
-      settingsPanel.reveal();
-    } else {
-      settingsPanel = new SettingsPanel(context.extensionUri, storageManager);
-      settingsPanel.onDispose(() => { settingsPanel = undefined; });
-    }
+    // 设置页显示在侧边栏（侧边栏内切换设置视图）
+    vscode.commands.executeCommand('workbench.view.extension.maoxuan-sidebar');
+    chatViewProvider?.showView('settings');
   });
 
   const openHistoryCmd = vscode.commands.registerCommand('maoxuan-guidance.openHistory', () => {
-    if (historyPanel) {
-      historyPanel.reveal();
-    } else {
-      historyPanel = new HistoryPanel(context.extensionUri, storageManager, (sessionId) => {
-        loadSession(context, sessionId);
-      });
-      historyPanel.onDispose(() => { historyPanel = undefined; });
-    }
+    // 历史记录显示在侧边栏（侧边栏内切换历史视图）
+    vscode.commands.executeCommand('workbench.view.extension.maoxuan-sidebar');
+    chatViewProvider?.showView('history');
   });
 
   const exportReportCmd = vscode.commands.registerCommand('maoxuan-guidance.exportReport', async () => {
@@ -57,15 +62,36 @@ export async function activate(context: vscode.ExtensionContext) {
       vscode.window.showWarningMessage('没有活跃的对话会话，请先开始对话。');
       return;
     }
-    const report = dialogueManager.generateReport();
-    const filePath = storageManager.saveReport(
-      dialogueManager.getCurrentSession()!.id,
-      report,
-      'md'
+    const formatPick = await vscode.window.showQuickPick(
+      [
+        { label: '$(markdown) Markdown', detail: '适合笔记 / 博客 / GitHub', value: 'md' },
+        { label: '$(file-text) TXT 纯文本', detail: '可直接复制粘贴到任何文档', value: 'txt' },
+        { label: '$(file) Word 文档', detail: 'Word / WPS 可直接打开编辑', value: 'doc' },
+        { label: '$(pdf) PDF', detail: '排版正式，适合存档与打印', value: 'pdf' },
+      ],
+      { placeHolder: '选择报告导出格式' }
     );
-    vscode.window.showInformationMessage(`报告已导出至：${filePath}`);
-    const doc = await vscode.workspace.openTextDocument(filePath);
-    await vscode.window.showTextDocument(doc);
+    if (!formatPick) return;
+    const session = dialogueManager.getCurrentSession()!;
+    try {
+      const report = dialogueManager.generateReport();
+      const filePath = await exportReportFile(
+        report,
+        session,
+        formatPick.value as 'md' | 'txt' | 'doc' | 'pdf',
+        storageManager.getReportsDirPath()
+      );
+      if (formatPick.value === 'md' || formatPick.value === 'txt') {
+        const doc = await vscode.workspace.openTextDocument(filePath);
+        await vscode.window.showTextDocument(doc);
+        vscode.window.showInformationMessage(`报告已导出：${filePath}`);
+      } else {
+        await vscode.env.openExternal(vscode.Uri.file(filePath));
+        vscode.window.showInformationMessage(`报告已导出：${filePath}`);
+      }
+    } catch (err) {
+      vscode.window.showErrorMessage(`导出失败: ${err}`);
+    }
   });
 
   context.subscriptions.push(

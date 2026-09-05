@@ -2,6 +2,7 @@
  * 历史记录面板 Webview 入口
  */
 import './globals.css';
+import { icon } from './lucideIcons';
 
 (function () {
   const vscode = acquireVsCodeApi();
@@ -13,9 +14,9 @@ import './globals.css';
     app.innerHTML = `
       <div class="p-4 max-w-3xl mx-auto">
         <div class="flex items-center justify-between mb-4 pb-3" style="border-bottom: 1px solid var(--vscode-sideBar-border);">
-          <h1 class="text-lg font-bold" style="color: var(--vscode-editor-foreground);">📋 历史对话记录</h1>
-          <button id="btnRefresh" class="text-xs px-3 py-1.5 rounded font-medium transition-colors" style="background: var(--vscode-button-secondaryBackground); color: var(--vscode-button-secondaryForeground); box-shadow: 0 1px 3px rgba(0,0,0,0.08);">
-            🔄 刷新
+          <h1 class="text-lg font-bold inline-flex items-center gap-2" style="color: var(--vscode-editor-foreground);">${icon('list', 18)} 历史对话记录</h1>
+          <button id="btnRefresh" class="ap-btn-pill text-xs px-3 py-1.5 font-medium inline-flex items-center gap-1" style="background: var(--vscode-button-secondaryBackground); color: var(--vscode-button-secondaryForeground); box-shadow: 0 1px 3px rgba(0,0,0,0.08);">
+            ${icon('refresh', 12)} 刷新
           </button>
         </div>
         <div id="sessionsList" class="space-y-2">
@@ -36,7 +37,7 @@ import './globals.css';
     if (!sessions || sessions.length === 0) {
       container.innerHTML = `
         <div class="text-center py-12">
-          <div class="text-3xl mb-2">📭</div>
+          <div class="flex justify-center mb-2" style="color: var(--vscode-descriptionForeground);">${icon('inbox', 36)}</div>
           <p class="text-sm" style="color: var(--vscode-descriptionForeground);">暂无历史对话</p>
           <p class="text-xs mt-1" style="color: var(--vscode-descriptionForeground); opacity: 0.7;">开始一个新的对话吧</p>
         </div>
@@ -64,10 +65,10 @@ import './globals.css';
                     data-session-id="${escapeHtml(session.id)}">
               查看对话
             </button>
-            <button class="delete-btn text-xs px-2 py-1 rounded transition-colors whitespace-nowrap" style="background: transparent; color: var(--vscode-descriptionForeground); border: 1px solid var(--vscode-sideBar-border);"
+            <button class="delete-btn text-xs px-2 py-1 rounded transition-colors whitespace-nowrap inline-flex items-center gap-1" style="background: transparent; color: var(--vscode-descriptionForeground); border: 1px solid var(--vscode-sideBar-border);"
                     data-session-id="${escapeHtml(session.id)}"
                     title="删除该记录">
-              🗑 删除
+              ${icon('trash', 11)} 删除
             </button>
           </div>
         </div>

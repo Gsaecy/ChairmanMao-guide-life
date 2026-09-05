@@ -15,7 +15,7 @@ export const DEFAULT_CONFIG: MaoxuanConfig = {
   storagePath: '',
   webSearchEnabled: true,
   searchApiKey: '',
-  searchEngine: 'serpapi',
+  searchEngine: 'bing',
   temperature: 0.7,
   maxTokens: 4096,
   style: 'balanced',

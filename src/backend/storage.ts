@@ -11,6 +11,7 @@ import { DEFAULT_CONFIG, DEFAULT_STORAGE_DIR, CONVERSATIONS_DIR, REPORTS_DIR } f
 export class StorageManager {
   private configKey = 'maoxuanConfig';
   private apiKeySecretName = 'maoxuanApiKey';
+  private apiKeyBackupName = 'maoxuanApiKeyBackup';
   private globalState: vscode.Memento;
   private secrets: vscode.SecretStorage;
   private cachedApiKey = ''; // SecretStorage 缓存，保证 getConfig 同步可用
@@ -21,18 +22,32 @@ export class StorageManager {
   }
 
   /**
-   * 初始化：迁移旧 globalState 中的 API Key 到系统密钥库，并加载到缓存
+   * 初始化：合并迁移三处来源（密钥库 / 本地备份 / settings.json / 旧 globalState）
    */
   async init(): Promise<void> {
     const saved = this.globalState.get<MaoxuanConfig>(this.configKey);
-    const legacyKey = saved?.apiKey;
+    // 兼容旧版：用户可能把 Key 配在 settings.json（maoxuan.apiKey）
+    const cfgKey = vscode.workspace
+      .getConfiguration('maoxuan')
+      .get<string>('apiKey');
+    const legacyKey = saved?.apiKey || cfgKey;
     if (legacyKey) {
-      // 旧版 Key 存 globalState，迁移到 SecretStorage（系统密钥库）
       await this.secrets.store(this.apiKeySecretName, legacyKey);
-      const { apiKey: _legacy, ...rest } = saved!;
-      await this.globalState.update(this.configKey, rest);
+      if (saved?.apiKey) {
+        const { apiKey: _legacy, ...rest } = saved!;
+        await this.globalState.update(this.configKey, rest);
+      }
     }
-    this.cachedApiKey = (await this.secrets.get(this.apiKeySecretName)) || '';
+    // 密钥库读取（可能有旧值）
+    const secretKey = (await this.secrets.get(this.apiKeySecretName)) || '';
+    // 本地备份兜底 + 自愈
+    const backupKey =
+      (await this.globalState.get<string>(this.apiKeyBackupName)) || '';
+    this.cachedApiKey = secretKey || backupKey;
+    if (!secretKey && backupKey) {
+      // 密钥库丢失但备份在 → 自动写回密钥库
+      await this.secrets.store(this.apiKeySecretName, backupKey);
+    }
   }
 
   // ============ 配置管理 ============
@@ -43,12 +58,14 @@ export class StorageManager {
   }
 
   async saveConfig(config: Partial<MaoxuanConfig>): Promise<void> {
-    // API Key 只存系统密钥库（SecretStorage），不落 globalState
+    // API Key 双写：系统密钥库（主）+ 本地备份（兜底，VS Code 内部存储）
     if (typeof config.apiKey === 'string') {
       if (config.apiKey) {
         await this.secrets.store(this.apiKeySecretName, config.apiKey);
+        await this.globalState.update(this.apiKeyBackupName, config.apiKey);
       } else {
         await this.secrets.delete(this.apiKeySecretName);
+        await this.globalState.update(this.apiKeyBackupName, undefined);
       }
       this.cachedApiKey = config.apiKey;
       const { apiKey: _key, ...rest } = config;

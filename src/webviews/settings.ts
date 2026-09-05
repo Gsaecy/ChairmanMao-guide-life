@@ -2,6 +2,7 @@
  * 设置面板 Webview 入口
  */
 import './globals.css';
+import { icon } from './lucideIcons';
 
 (function () {
   const vscode = acquireVsCodeApi();
@@ -13,11 +14,16 @@ import './globals.css';
   function renderApp() {
     app.innerHTML = `
       <div class="p-4 max-w-lg mx-auto">
-        <h1 class="text-lg font-bold mb-4 pb-2" style="border-bottom: 1px solid var(--vscode-sideBar-border); color: var(--vscode-editor-foreground);">⚙ 毛主席思想指导 — 设置</h1>
+        <div class="flex items-center gap-2 mb-4 pb-2" style="border-bottom: 1px solid var(--vscode-sideBar-border);">
+          <button id="btnBack" class="ap-btn-pill px-3 py-1 text-xs inline-flex items-center gap-1" style="background: var(--glass); border: 1px solid var(--line); color: var(--vscode-descriptionForeground);" title="返回侧边栏主页">
+            ${icon('x', 12)} 返回
+          </button>
+          <h1 class="text-lg font-bold inline-flex items-center gap-2" style="color: var(--vscode-editor-foreground); margin: 0;">${icon('settings', 18)} 设置</h1>
+        </div>
 
         <!-- AI 供应商 -->
         <section class="mb-6">
-          <h2 class="text-sm font-bold mb-2" style="color: var(--vscode-editor-foreground);">🤖 AI 供应商</h2>
+          <h2 class="text-sm font-bold mb-2 inline-flex items-center gap-1.5" style="color: var(--vscode-editor-foreground);">${icon('bot', 14)} AI 供应商</h2>
 
           <label class="block text-xs mb-1" style="color: var(--vscode-descriptionForeground);">供应商</label>
           <select id="provider" class="ap-input w-full border rounded px-3 py-1.5 text-sm mb-3">
@@ -42,16 +48,11 @@ import './globals.css';
           <input id="model" type="text" class="ap-input w-full border rounded px-3 py-1.5 text-sm mb-4" 
             placeholder="deepseek-chat" list="modelList" />
           <datalist id="modelList"></datalist>
-
-          <button id="btnTest" class="ap-btn-pill px-4 py-1.5 text-sm w-full font-medium" style="background: var(--vscode-button-background); color: var(--vscode-button-foreground); box-shadow: 0 1px 3px rgba(0,0,0,0.12);">
-            测试连接
-          </button>
-          <div id="testResult" class="hidden text-xs mt-2 p-2 rounded"></div>
         </section>
 
         <!-- 对话设置 -->
         <section class="mb-6">
-          <h2 class="text-sm font-bold mb-2" style="color: var(--vscode-editor-foreground);">💬 对话设置</h2>
+          <h2 class="text-sm font-bold mb-2 inline-flex items-center gap-1.5" style="color: var(--vscode-editor-foreground);">${icon('message', 14)} 对话设置</h2>
 
           <label class="block text-xs mb-1" style="color: var(--vscode-descriptionForeground);">Temperature（0-2，建议 0.7）</label>
           <input id="temperature" type="range" class="w-full mb-3" min="0" max="2" step="0.1" value="0.7" />
@@ -66,7 +67,7 @@ import './globals.css';
 
         <!-- 风格偏好 -->
         <section class="mb-6">
-          <h2 class="text-sm font-bold mb-2" style="color: var(--vscode-editor-foreground);">🎨 风格偏好</h2>
+          <h2 class="text-sm font-bold mb-2 inline-flex items-center gap-1.5" style="color: var(--vscode-editor-foreground);">${icon('palette', 14)} 风格偏好</h2>
           <select id="style" class="ap-input w-full border rounded px-3 py-1.5 text-sm mb-2">
             <option value="balanced">平衡融合（推荐）</option>
             <option value="maoxuan">偏重毛选原教旨主义</option>
@@ -79,7 +80,7 @@ import './globals.css';
 
         <!-- 联网搜索设置 -->
         <section class="mb-6">
-          <h2 class="text-sm font-bold mb-2" style="color: var(--vscode-editor-foreground);">🌐 联网搜索（可选）</h2>
+          <h2 class="text-sm font-bold mb-2 inline-flex items-center gap-1.5" style="color: var(--vscode-editor-foreground);">${icon('globe', 14)} 联网搜索（可选）</h2>
 
           <label class="flex items-center gap-2 mb-3">
             <input id="webSearchEnabled" type="checkbox" class="rounded" />
@@ -104,18 +105,18 @@ import './globals.css';
 
         <!-- 存储设置 -->
         <section class="mb-6">
-          <h2 class="text-sm font-bold mb-2" style="color: var(--vscode-editor-foreground);">📁 存储路径（可选）</h2>
+          <h2 class="text-sm font-bold mb-2 inline-flex items-center gap-1.5" style="color: var(--vscode-editor-foreground);">${icon('folder', 14)} 存储路径（可选）</h2>
           <input id="storagePath" type="text" class="ap-input w-full border rounded px-3 py-1.5 text-sm" 
             placeholder="留空使用默认路径" />
         </section>
 
         <!-- 操作按钮 -->
         <div class="flex gap-3 pt-4" style="border-top: 1px solid var(--vscode-sideBar-border);">
-          <button id="btnSave" class="ap-btn-pill flex-1 px-4 py-2 text-sm font-medium" style="background: var(--vscode-button-background); color: var(--vscode-button-foreground); box-shadow: 0 1px 3px rgba(0,0,0,0.12);">
-            💾 保存设置
+          <button id="btnSave" class="ap-btn-pill flex-1 px-4 py-2 text-sm font-medium inline-flex items-center justify-center gap-1.5" style="background: var(--vscode-button-background); color: var(--vscode-button-foreground); box-shadow: 0 1px 3px rgba(0,0,0,0.12);">
+            ${icon('check', 14)} 保存设置
           </button>
-          <button id="btnReset" class="ap-btn-pill px-4 py-2 text-sm" style="background: var(--vscode-button-secondaryBackground); color: var(--vscode-button-secondaryForeground);">
-            ↻ 恢复默认
+          <button id="btnReset" class="ap-btn-pill px-4 py-2 text-sm inline-flex items-center gap-1.5" style="background: var(--vscode-button-secondaryBackground); color: var(--vscode-button-secondaryForeground);">
+            ${icon('refresh', 14)} 恢复默认
           </button>
         </div>
       </div>
@@ -126,11 +127,11 @@ import './globals.css';
   function bindEvents() {
     setEl('btnSave', 'click', handleSave);
     setEl('btnReset', 'click', handleReset);
-    setEl('btnTest', 'click', handleTest);
     setEl('temperature', 'input', handleTempChange);
     setEl('webSearchEnabled', 'change', handleSearchToggle);
     setEl('style', 'change', handleStyleChange);
     setEl('provider', 'change', handleProviderChange);
+    setEl('btnBack', 'click', () => vscode.postMessage({ command: 'closeSettings' }));
   }
 
   function setEl(id: string, event: string, handler: (e?: any) => void) {
@@ -245,24 +246,6 @@ import './globals.css';
     });
   }
 
-  function handleTest() {
-    const config = collectConfig();
-    if (!config.apiKey) {
-      showTestResult(false, '请先输入 API Key');
-      return;
-    }
-    vscode.postMessage({ command: 'testConnection', payload: config });
-  }
-
-  function showTestResult(success: boolean, message: string) {
-    const el = getEl('testResult');
-    if (!el) return;
-    el.classList.remove('hidden');
-    el.className = el.className.replace(/bg-\w+-\d+/, '') + 
-      (success ? ' bg-green-100 text-green-800' : ' bg-red-100 text-red-800');
-    el.textContent = message;
-  }
-
   function handleTempChange(e: any) {
     const val = e.target?.value || 0.7;
     const el = getEl('tempValue') as HTMLElement;
@@ -303,9 +286,6 @@ import './globals.css';
     switch (message.command) {
       case 'loadConfig':
         loadConfig(message.payload);
-        break;
-      case 'testResult':
-        showTestResult(message.payload.success, message.payload.message);
         break;
     }
   });

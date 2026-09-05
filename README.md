@@ -6,12 +6,12 @@
 
 | 功能 | 说明 |
 |------|------|
-| 💬 **六阶段递进提问** | 认清形势 → 调查优先 → 抓主要矛盾 → 战略战术 → 群众路线 → 实践检验，层层深入不轻易下结论 |
-| 🎨 **三种分析风格** | 毛选风格 / 叶丁风格 / 平衡融合（推荐），按会话绑定 |
-| 🖥️ **主题自适应** | 深/浅色自动跟随 VS Code，全部输入框带细腻阴影 |
-| 📝 **报告导出** | 一键导出 Markdown 分析报告 |
-| 🕘 **历史管理** | 自动保存全部对话（含时间戳），查看/搜索/删除 |
-| ⚙️ **灵活配置** | 默认 DeepSeek，兼容所有 OpenAI 格式 API；可选联网搜索、温度、模型 |
+| 💬 **六阶段递进对话** | 全面了解 → 矛盾分析 → 条件评估 → 战略建议 → 战术行动 → 反思迭代，层层深入不轻易下结论 |
+| 🎨 **三种分析风格** | 毛选风格 / 叶丁风格 / 平衡融合（推荐），按会话绑定，新建对话弹窗可选 |
+| 🌐 **联网能力** | 消息含链接自动抓取网页正文；「联网」开关开启后回答前自动搜索网络（必应免费）并注明来源 |
+| ⚙️ **多供应商设置** | DeepSeek / OpenAI / 百炼 / Kimi / GLM / 硅基流动 / 自定义；自动拉取官网真实模型列表 |
+| 📝 **专业报告导出** | 六维度实事求是分析，一键导出 Markdown / TXT / Word / PDF |
+| 🕘 **历史管理** | 自动保存全部对话，查看 / 删除，主题、阶段、相对时间一目了然 |
 
 ---
 
@@ -20,69 +20,14 @@
 
 ---
 
-## What's New in v0.2.8
+## What's New in v0.3.0
 
-- 🖼️ **恢复原始图标** —— 活动栏/扩展/欢迎图标全部还原为原始设计（书法风），移除线条五角星
-
----
-
-## What's New in v0.2.7
-
-- 🤖 **AI 供应商设置（参考扩展选择助手）** —— 供应商下拉框（DeepSeek / OpenAI / 阿里云百炼 / Kimi / 智谱 GLM / 硅基流动 / 自定义），选品牌自动填充 API 地址与模型，模型支持下拉选择
-- 💬 **ChatGPT 风格对话页** —— 消息带头像（AI 线条星 / 用户「我」）、居中消息区、底部大圆角输入框 + 圆形发送按钮
-
----
-
-## What's New in v0.2.6
-
-- 💬 **GPT 风格聊天渲染** —— AI 回复完整 Markdown 渲染（标题/列表/代码块/引用/表格，DOMPurify 防注入）；用户消息纯文本转义；流式结束用完整渲染覆盖；消息内链接点击用浏览器打开
-- 📋 **GPT 风格历史记录** —— 相对时间显示（刚刚/x 分钟前/昨天）、每条对话显示首条消息预览摘要
-- 🚫 移除主页与聊天欢迎区的图标展示
-
----
-
-## What's New in v0.2.5
-
-- 🧠 **AI 沙盒质检** —— 请求源头关闭思考模式（DeepSeek `thinking: {type: "disabled"}`）；输出经质检关卡清洗（`<think>` 思考块、R1 思考标记、寒暄前缀）后才回传界面；`finish_reason=length` 截断残留同样清洗
-- 🔐 **API Key 安全存储** —— 迁移到系统密钥库（SecretStorage），不再落 VS Code 全局状态；旧配置自动迁移，清空即删除
-- 🖼️ **简约线条图标** —— 扩展图标/欢迎图标换为红色线条五角星，活动栏矢量 SVG 随主题自适应
-- 🎨 **完全 Apple 风格** —— 参考扩展选择助手：半透明毛玻璃卡片（`blur(24px) saturate(180%)`）、胶囊按钮、hover 微交互；主页重排为「副标题 → 功能介绍 → 使用说明 → 赞助与开发链接」
-
----
-
-## What's New in v0.2.4
-
-- 🖼️ **恢复原始图标** —— 扩展图标、欢迎图标、活动栏图标全部还原为原始设计，不再使用自绘线条图形
-- 🐛 保留 v0.2.2 全部 bug 修复（阶段推进竞态、引导提示、关闭对话、API 路径、消息计数）
-
----
-
-## What's New in v0.2.3
-
-- 🐛 **修复阶段自动推进竞态** —— 此前 AI 回复完成后触发新引导流时，控制器被误置空导致流无法中止、并发混流；现改为回复完整渲染释放后再判断推进，并发时自动中止旧流
-- 🐛 **修复引导提示失效** —— 阶段过渡提示此前存为 system 角色后被过滤，AI 根本没收到；现改为用户角色正确发送，历史记录同步修正
-- 🐛 **修复关闭对话失效** —— 「关闭对话」按钮此前永不显示；现会话创建后显示，关闭后同步清除宿主当前会话（导出报告不再指向旧会话）
-- 🐛 **修复 API 地址拼接** —— 支持填入 `/v1` 结尾或完整 chat/completions 端点，不再重复拼接路径
-- 🐛 **修复历史消息计数** —— 消息数不再包含内部 system 记录
-- 🎨 **Apple 风格细节** —— 设置页卡片化（圆角+毛玻璃阴影+hover 微交互），顶栏轻阴影
-
----
-
-## What's New in v0.2.1
-
-- 🏷️ **扩展更名为「毛主席思想指导」** —— 面板标题、活动栏、设置页、系统提示词全部同步更新，侧边栏展示中英文名称
-- 👨‍💻 **主页完善** —— 侧边栏新增开发者个人主页与 GitHub 项目链接，一键直达
-
----
-
-## What's New in v0.2.0
-
-- ✨ **Redesigned Sidebar Navigation** - Clean status display (extension name + style mode + API readiness) with three action buttons (New Chat / History / Settings), welcome icon, and step-by-step usage guide
-- 🎨 **Full Theme Adaptation** - History & Settings panels now use VSCode CSS variables; no more hardcoded red/white colors; all input fields have subtle shadows `0 1px 3px rgba()`
-- ⚡ **Independent Chat Panel** - New sessions open directly in editor panel; no more sidebar UI flickering or lost session titles
-- 🔧 **Streaming Performance** - 100ms RAF debounce prevents character-by-character rendering, giving smooth text flow
-- 📋 **Improved History Panel** - Enhanced color contrast, card hover shadows, Delete button with confirmation dialog
-- 🧹 **Code Cleanup** - Removed sidebar-specific logic from chat panel; sidebar now uses dedicated `sidebar.ts` webview
+- 🌐 **联网能力**：消息含链接自动抓取网页正文摘要；输入框旁「联网」开关，开启后回答前自动搜索网络（必应免费免 Key，可选 SerpAPI），联网资料注入上下文并要求注明来源，失败静默降级
+- 📝 **专业分析报告**：问题概述 → 六维度实事求是分析（事实/矛盾/条件/战略/战术/风险）→ 结论与行动建议 → 执行检验标准；一键导出 Markdown / TXT（可直接复制）/ Word（.doc 可直接编辑）/ PDF（中文字体嵌入排版）
+- ⚙️ **设置页全面升级**：多供应商预设自动填地址；打开设置自动从官网拉取真实模型列表（不再显示过时预设）；API Key 眼睛查看、三态徽章、「应用 Key 并自动检测模型」按钮；保存按钮绿色锁定状态机；恢复默认带确认弹窗；保存前校验与分级错误提示
+- 💬 **对话体验升级**：新建对话弹窗（默认预选设置风格、卡片选择仅本次生效、取消后标题默认日期时间）；流式回复平滑无闪烁；历史对话点击或「查看」即可打开（就绪消息队列保证消息不丢）
+- 🎨 **界面细节**：导航高亮跟随视图、顶栏风格徽章实时同步、模型自定义下拉、主题自适应毛玻璃卡片
+- 🐛 **稳定性修复**：修复 webview CSP 内联样式被拦截、脚本初始化 TDZ 崩溃、保存消息丢失、流式最终渲染丢失等一系列问题
 
 ---
 
@@ -136,17 +81,18 @@ Mao's Thought Guidance is a VS Code extension that uses Mao's Selected Works cor
 - **Balanced Fusion** - Best of both (recommended)
 
 ### Flexible Configuration
-- Default support for **DeepSeek** API, compatible with all OpenAI-format APIs
-- Optional web search (SerpAPI / Bing / AnySearch)
-- Configurable temperature, max tokens, and model selection
+- Support for **DeepSeek** by default, compatible with all OpenAI-format APIs
+- 7 provider presets + custom: auto-fills API base URL, auto-detects the official model list from the API
+- Web search toggle (Bing free without key / SerpAPI optional), temperature, max tokens, model selection
 
 ### Report Export
-- One-click export of analysis reports as **Markdown**
+- Professional six-dimension analysis report (seeking truth from facts)
+- One-click export as **Markdown / TXT / Word (.doc) / PDF**
 
 ### History Management
 - Auto-saves all conversations with timestamps
-- View, search, and delete history records with smooth UI
-- Phase tracking for each conversation
+- View (click or「查看」button), and delete history records
+- Phase tracking, relative time, title and preview for each conversation
 
 ---
 
@@ -154,20 +100,21 @@ Mao's Thought Guidance is a VS Code extension that uses Mao's Selected Works cor
 
 ### 1. Install
 ```bash
-code --install-extension ChairmanMao-guide-life-0.2.8.vsix
+code --install-extension ChairmanMao-guide-life-0.3.0.vsix
 ```
 
 ### 2. Configure API
 1. Look for 「毛主席思想指导」(Mao's Thought) in the VS Code Activity Bar (sidebar)
 2. Click the ⚙ **Settings** button
-3. Fill in your API Key from [platform.deepseek.com](https://platform.deepseek.com)
-4. Click **Save Settings** and you're ready to start
+3. Pick an AI provider (DeepSeek / OpenAI / 百炼 / Kimi / GLM / 硅基流动 / 自定义) — address and official model list fill automatically
+4. Paste your API Key (from [platform.deepseek.com](https://platform.deepseek.com) etc.) and click **Apply Key & Detect Models** — or **Save Settings**
+5. The official model list loads automatically; the green bar shows「设置正常」when ready
 
 ### 3. Start Chatting
-1. Click **+ New Chat** in the sidebar
-2. Enter your situation/problem (this becomes the chat title)
-3. Press Enter and describe your situation in detail
-4. The AI will guide you through six analytical phases
+1. Click **新建对话** in the sidebar
+2. Enter a title (or cancel and type directly — the title defaults to the start date/time), pick a style for this session if you like
+3. Describe your situation; the AI guides you through six analytical phases
+4. Toggle「联网」next to the input to search the web before answering
 
 ---
 
@@ -175,13 +122,14 @@ code --install-extension ChairmanMao-guide-life-0.2.8.vsix
 
 | Key | Description | Default |
 |-----|-------------|---------|
+| Provider | AI provider preset | deepseek |
 | API Base URL | API endpoint | https://api.deepseek.com |
 | API Key | Authentication token | - |
-| Model | Model name | deepseek-chat |
-| Temperature | Creativity (0-2) | 0.7 |
-| Max Tokens | Response length | 4096 |
+| Model | Auto-detected from official list | - |
+| Temperature | Creativity (0=stable, 2=divergent) | 0.7 |
+| Max Tokens | Single-response length | 4096 |
 | Style | Analysis mode | balanced |
-| Web Search | Enable web queries | disabled |
+| Web Search | Search before answering | enabled (Bing) |
 
 ---
 
@@ -211,6 +159,26 @@ MIT
 ---
 
 ## Changelog
+
+### v0.3.0
+
+**联网能力**
+- 消息含链接自动抓取网页标题与正文摘要注入上下文
+- 输入框旁「联网」开关：开启后回答前自动搜索网络（必应免费免 Key，可选 SerpAPI），结果注明来源；联网失败静默降级
+- 设置页新增联网搜索开关、搜索引擎与搜索 Key 配置
+
+**专业分析报告**
+- 结构：问题概述 → 六维度实事求是分析（事实/矛盾/条件/战略/战术/风险）→ 结论与行动建议 → 执行检验标准
+- 一键导出 Markdown / TXT（可直接复制）/ Word（.doc 可直接编辑）/ PDF（中文字体嵌入排版，自动分页）
+
+**设置页升级**
+- 供应商预设自动填地址；打开设置自动从官网拉取真实模型列表；模型自定义下拉；API Key 眼睛查看、三态徽章、应用并检测按钮；保存绿色锁定状态机；恢复默认确认弹窗；保存前校验与分级错误提示；导航高亮跟随视图
+
+**对话体验升级**
+- 新建对话弹窗：默认预选设置风格、卡片选择仅本次生效、取消后标题默认日期时间；流式回复平滑无闪烁；历史对话点击/「查看」打开（就绪消息队列保消息不丢）；ChatGPT 风格界面与主题自适应
+
+**稳定性修复**
+- 修复 webview CSP 内联样式被拦截、脚本初始化 TDZ 崩溃、保存消息丢失、流式最终渲染丢失、模型检测鉴权误报等一系列问题
 
 ### v0.2.8
 - 恢复原始图标（活动栏/扩展/欢迎图标还原为原始设计）

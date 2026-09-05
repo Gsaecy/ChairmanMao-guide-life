@@ -2,6 +2,7 @@
  * 对话面板 Webview 入口 - Apple 风格简洁界面
  */
 import './globals.css';
+import { icon } from './lucideIcons';
 // marked 是 ESM/CJS 双包：TS 解析到 ESM 类型报 TS1479，webpack 按 require 条件打包 CJS，忽略即可
 // @ts-ignore TS1479: marked dual package, webpack resolves CJS via require condition
 import { marked } from 'marked';
@@ -15,6 +16,8 @@ import DOMPurify from 'dompurify';
   let sessionLoaded = false;
 
   let currentStyle: string = 'balanced'; // 当前对话风格
+  let defaultStyle: string = 'balanced'; // 设置页保存的默认风格（新建对话时预选）
+  let webEnabled = true; // 联网搜索开关（默认与设置一致）
 
   // 流式渲染防抖——60ms节流+RAF合并，避免逐字跳动（修复逐字渲染问题）
   let rafPending = false;
@@ -34,8 +37,10 @@ import DOMPurify from 'dompurify';
       lastRenderTime = now;
       const bubble = document.querySelector('[data-is-stream="true"]') as HTMLElement;
       if (!bubble) return;
+      const contentEl = bubble.querySelector('[data-stream-content]') as HTMLElement;
+      if (!contentEl) return;
       const clean = filterGarbled(streamingBuffer);
-      bubble.innerHTML = formatContent(clean);
+      contentEl.innerHTML = formatContent(clean);
       const container = getEl('messagesContainer')!;
       container.scrollTop = container.scrollHeight;
     });
@@ -50,9 +55,11 @@ import DOMPurify from 'dompurify';
     rafPending = false;
     const bubble = document.querySelector('[data-is-stream="true"]') as HTMLElement;
     if (!bubble) return;
+    const contentEl = bubble.querySelector('[data-stream-content]') as HTMLElement;
+    if (!contentEl) return;
     lastRenderTime = performance.now();
     const clean = filterGarbled(streamingBuffer);
-    bubble.innerHTML = formatContent(clean);
+    contentEl.innerHTML = formatContent(clean);
     const container = getEl('messagesContainer')!;
     container.scrollTop = container.scrollHeight;
   }
@@ -71,8 +78,8 @@ import DOMPurify from 'dompurify';
             <span id="phaseLabel" class="text-[10px] px-2 py-0.5 rounded-full" style="background: var(--vscode-inputValidation-infoBackground); color: var(--vscode-inputValidation-infoForeground);">就绪</span>
           </div>
           <div class="flex items-center gap-2">
-            <button id="btnNewSession" class="ap-btn-pill text-xs px-3 py-1.5 font-medium" style="background: var(--vscode-button-background); color: var(--vscode-button-foreground);">
-              ＋ 新建对话
+            <button id="btnNewSession" class="ap-btn-pill text-xs px-3 py-1.5 font-medium inline-flex items-center gap-1" style="background: var(--vscode-button-background); color: var(--vscode-button-foreground);">
+              ${icon('plus', 12)} 新建对话
             </button>
             <button id="btnCloseSession" class="hidden ap-btn-pill text-xs px-3 py-1.5" style="background: var(--vscode-button-secondaryBackground); color: var(--vscode-button-secondaryForeground);" title="关闭当前对话">关闭对话</button>
             <button id="btnHistory" class="ap-btn-pill text-xs px-3 py-1.5" style="background: var(--glass); backdrop-filter: blur(24px) saturate(180%); -webkit-backdrop-filter: blur(24px) saturate(180%); color: var(--vscode-descriptionForeground); border: 1px solid var(--line);">历史记录</button>
@@ -116,8 +123,9 @@ import DOMPurify from 'dompurify';
               rows="2"
               placeholder="同志，请说说你面临的具体情况..."
             ></textarea>
-            <button id="btnSend" class="ap-btn-pill flex-shrink-0 w-11 h-11 flex items-center justify-center text-lg font-bold" style="background: var(--vscode-button-background); color: var(--vscode-button-foreground); box-shadow: 0 1px 3px rgba(0,0,0,0.1);" title="发送">
-              ↑
+            <button id="btnWeb" class="ap-btn-pill flex-shrink-0 h-11 px-3 text-xs font-medium inline-flex items-center gap-1" style="background: var(--vscode-button-background); color: var(--vscode-button-foreground);" title="联网搜索：开启后回答前自动搜索网络并抓取链接内容">${icon('globe', 14)} 联网</button>
+            <button id="btnSend" class="ap-btn-pill flex-shrink-0 w-11 h-11 flex items-center justify-center" style="background: var(--vscode-button-background); color: var(--vscode-button-foreground); box-shadow: 0 1px 3px rgba(0,0,0,0.1);" title="发送">
+              ${icon('arrowUp', 20)}
             </button>
             <button id="btnAbort" class="hidden ap-btn-pill flex-shrink-0 px-4 py-2.5 text-xs font-medium" style="background: var(--vscode-button-secondaryBackground); color: var(--vscode-button-secondaryForeground);" title="停止">停止</button>
           </div>
@@ -138,6 +146,7 @@ import DOMPurify from 'dompurify';
       </div>
     `;
     bindEvents();
+    updateWebBtnState();
     loadIconImage();
   }
 
@@ -152,10 +161,11 @@ import DOMPurify from 'dompurify';
     setEl('btnAbort', 'click', handleAbort);
     setEl('btnNewSession', 'click', promptNewSession);
     setEl('btnCloseSession', 'click', closeSession);
+    setEl('btnWeb', 'click', handleWebToggle);
     setEl('btnSettings', 'click', () => vscode.postMessage({ command: 'openSettings' }));
     setEl('btnHistory', 'click', () => vscode.postMessage({ command: 'openHistory' }));
     setEl('btnAdvance', 'click', () => vscode.postMessage({ command: 'advancePhase' }));
-    setEl('btnExport', 'click', () => vscode.postMessage({ command: 'exportReport' }));
+    setEl('btnExport', 'click', () => vscode.postMessage({ command: 'prepareReport' }));
     
     const inputBox = getEl('inputBox') as HTMLTextAreaElement;
     if (inputBox) {
@@ -196,17 +206,43 @@ import DOMPurify from 'dompurify';
     if (!content) return;
 
     if (!sessionLoaded) {
-      const title = content.length > 30 ? content.substring(0, 30) + '...' : content;
-      currentStyle = 'balanced';
-      updateStyleLabel(currentStyle);
+      // 直接开始对话（弹窗已取消、未填标题）：标题默认用对话开始的日期和时间，风格用设置里的默认
+      const d = new Date();
+      const pad = (n: number) => String(n).padStart(2, '0');
+      const title = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+      currentStyle = defaultStyle;
+      const styleLabel = getEl('styleLabel');
+      if (styleLabel) styleLabel.textContent = title; // 顶栏显示日期时间标题
       vscode.postMessage({ command: 'createSession', payload: { title, style: currentStyle } });
       sessionLoaded = true;
     }
 
     addMessage('user', content);
     inputBox.value = '';
-    
-    vscode.postMessage({ command: 'sendMessage', payload: { content } });
+
+    vscode.postMessage({ command: 'sendMessage', payload: { content, webSearch: webEnabled } });
+  }
+
+  /** 联网搜索开关：切换状态与按钮视觉 */
+  function handleWebToggle() {
+    webEnabled = !webEnabled;
+    updateWebBtnState();
+  }
+
+  function updateWebBtnState() {
+    const btn = getEl('btnWeb');
+    if (!btn) return;
+    if (webEnabled) {
+      btn.style.background = 'var(--vscode-button-background)';
+      btn.style.color = 'var(--vscode-button-foreground)';
+      btn.innerHTML = `${icon('globe', 14)} 联网`;
+      btn.title = '联网搜索已开启：回答前自动搜索网络并抓取链接内容（点击关闭）';
+    } else {
+      btn.style.background = 'var(--glass)';
+      btn.style.color = 'var(--vscode-descriptionForeground)';
+      btn.innerHTML = `${icon('globe', 14)} 联网`;
+      btn.title = '联网搜索已关闭（点击开启）';
+    }
   }
 
   function handleAbort() {
@@ -218,7 +254,7 @@ import DOMPurify from 'dompurify';
   function avatarHtml(role: 'user' | 'assistant'): string {
     if (role === 'assistant') {
       return `<div class="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0" style="background: var(--glass); border: 1px solid var(--line);">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#D23029" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"/></svg>
+        ${icon('star', 14, '#5AC8FA')}
       </div>`;
     }
     return `<div class="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 text-[11px] font-semibold" style="background: var(--vscode-button-background); color: var(--vscode-button-foreground);">我</div>`;
@@ -269,11 +305,11 @@ import DOMPurify from 'dompurify';
   function getOrCreateStreamBubble(): HTMLElement {
     const container = getEl('messagesContainer')!;
     // 修复：用 data-is-stream 属性查找现有流式气泡，而非不存在的 .bg-white 类
-    let streamBubble = container.querySelector('[data-is-stream="true"]') as HTMLElement;
-    if (streamBubble) {
-      return streamBubble;
+    const existing = container.querySelector('[data-is-stream="true"]') as HTMLElement;
+    if (existing) {
+      return existing;
     }
-    
+
     const msgDiv = document.createElement('div');
     msgDiv.className = 'flex justify-start gap-2';
     msgDiv.style.cssText = 'align-items: flex-start;';
@@ -281,9 +317,18 @@ import DOMPurify from 'dompurify';
     bubble.className = 'md-body border rounded-2xl rounded-bl-lg px-4 py-2.5 max-w-[80%] text-sm leading-relaxed';
     bubble.style.cssText = 'background: var(--glass); backdrop-filter: blur(24px) saturate(180%); -webkit-backdrop-filter: blur(24px) saturate(180%); border-color: var(--line); color: var(--vscode-editor-foreground);';
     bubble.setAttribute('data-is-stream', 'true');
+    // 阶段标签与正文分离：流式渲染只更新正文区，标签不重建，避免闪烁
+    const phaseEl = document.createElement('div');
+    phaseEl.className = 'text-[10px] mb-1 opacity-50';
+    phaseEl.setAttribute('data-stream-phase', '');
+    phaseEl.style.cssText = 'color: var(--vscode-descriptionForeground);';
+    const contentEl = document.createElement('div');
+    contentEl.setAttribute('data-stream-content', '');
+    bubble.appendChild(phaseEl);
+    bubble.appendChild(contentEl);
     msgDiv.innerHTML = avatarHtml('assistant');
     msgDiv.appendChild(bubble);
-    
+
     const loading = getEl('loadingIndicator');
     if (loading) {
       container.insertBefore(msgDiv, loading);
@@ -400,7 +445,12 @@ import DOMPurify from 'dompurify';
     
     switch (message.command) {
       case 'promptNewSession':
-        showNewSessionDialog();
+        defaultStyle = message.payload?.style || 'balanced';
+        showNewSessionDialog(defaultStyle);
+        break;
+
+      case 'setDefaultStyle':
+        defaultStyle = message.payload || 'balanced';
         break;
 
       case 'sessionCreated':
@@ -423,6 +473,14 @@ import DOMPurify from 'dompurify';
         updatePhase(currentPhase, '');
         renderHistoryMessages(message.payload.messages);
         {
+          // 顶栏显示当前对话主题
+          const title = message.payload.title || '';
+          const styleLabel = getEl('styleLabel');
+          if (styleLabel) {
+            styleLabel.textContent = title ? (title.length > 16 ? title.substring(0, 16) + '…' : title) : '当前对话';
+          }
+        }
+        {
           const closeBtn = getEl('btnCloseSession');
           if (closeBtn) closeBtn.classList.remove('hidden');
         }
@@ -443,40 +501,31 @@ import DOMPurify from 'dompurify';
           // 自愈：阶段自动推进的引导流没有 streamStart 消息，这里自动进入流式状态
           if (!isStreaming) startStreaming();
           const bubble = getOrCreateStreamBubble();
-          // ensure phase label on stream bubble
-          let phaseLabel = bubble.querySelector('[data-stream-phase]') as HTMLElement;
-          if (!phaseLabel) {
-            phaseLabel = document.createElement('div');
-            phaseLabel.className = 'text-[10px] mb-1 opacity-50';
-            phaseLabel.setAttribute('data-stream-phase', '');
-            phaseLabel.style.cssText = 'color: var(--vscode-descriptionForeground);';
-            // insert after any existing phase label, or at beginning
-            const existing = bubble.querySelector('[data-stream-phase]');
-            if (!existing) bubble.insertBefore(phaseLabel, bubble.firstChild);
+          // 更新阶段标签（标签元素固定存在，不再反复重建）
+          const phaseEl = bubble.querySelector('[data-stream-phase]') as HTMLElement;
+          if (phaseEl) {
+            const phaseShort = currentPhase === 'understanding' ? '全面了解' :
+              currentPhase === 'contradiction' ? '矛盾分析' :
+              currentPhase === 'condition' ? '条件评估' :
+              currentPhase === 'strategy' ? '战略建议' :
+              currentPhase === 'tactics' ? '战术行动' :
+              currentPhase === 'reflection' ? '反思迭代' : '';
+            phaseEl.textContent = phaseShort;
           }
-          const phaseShort = currentPhase === 'understanding' ? '全面了解' : 
-            currentPhase === 'contradiction' ? '矛盾分析' : 
-            currentPhase === 'condition' ? '条件评估' : 
-            currentPhase === 'strategy' ? '战略建议' : 
-            currentPhase === 'tactics' ? '战术行动' : 
-            currentPhase === 'reflection' ? '反思迭代' : '';
-          phaseLabel.textContent = phaseShort;
-          
+
           streamingBuffer += text;
           // 使用 requestAnimationFrame 防抖合并渲染，避免逐字更新
           scheduleStreamRender();
         } else {
-          stopStreaming();
-          const streamBubble = document.querySelector('[data-is-stream="true"]');
+          // done=true 携带完整文本：先渲染最终 Markdown，再收尾（避免 stopStreaming 清空缓冲/移除标记后找不到气泡）
+          const fullText = filterGarbled(text);
+          const streamBubble = document.querySelector('[data-is-stream="true"]') as HTMLElement;
           if (streamBubble) {
+            const contentEl = streamBubble.querySelector('[data-stream-content]') as HTMLElement;
+            if (contentEl) contentEl.innerHTML = formatMarkdown(fullText);
             streamBubble.removeAttribute('data-is-stream');
-            // 使用累积的 streamingBuffer 而非 text，确保内容完整
-            const fullText = streamingBuffer || text;
-            const clean = filterGarbled(fullText);
-            // GPT 风格：流式结束用完整 Markdown 渲染覆盖轻量渲染
-            streamBubble.innerHTML = formatMarkdown(clean);
           }
-          streamingBuffer = '';
+          stopStreaming();
         }
         const container = getEl('messagesContainer')!;
         container.scrollTop = container.scrollHeight;
@@ -495,6 +544,10 @@ import DOMPurify from 'dompurify';
         showReportDialog(message.payload);
         break;
 
+      case 'reportSaved':
+        showReportSaveStatus(message.payload);
+        break;
+
       case 'error':
         stopStreaming();
         showError(message.payload);
@@ -502,7 +555,8 @@ import DOMPurify from 'dompurify';
     }
   });
 
-  function showNewSessionDialog() {
+  function showNewSessionDialog(defaultStyleValue: string) {
+    const initialStyle = defaultStyleValue || 'balanced';
     const overlay = document.createElement('div');
     overlay.className = 'fixed inset-0 flex items-center justify-center z-50';
     overlay.style.cssText = 'background: rgba(0,0,0,0.3); backdrop-filter: blur(4px);';
@@ -511,23 +565,23 @@ import DOMPurify from 'dompurify';
         <h3 class="text-base font-semibold mb-4" style="color: var(--vscode-editor-foreground);">新建对话</h3>
         <label class="block text-xs mb-1" style="color: var(--vscode-descriptionForeground);">对话标题</label>
         <input id="newTitleInput" type="text" class="ap-input w-full border rounded px-3 py-2 text-sm mb-4" placeholder="输入对话标题..." />
-        <label class="block text-xs mb-1" style="color: var(--vscode-descriptionForeground);">对话风格（选择后本次对话不可更改）</label>
+        <label class="block text-xs mb-1" style="color: var(--vscode-descriptionForeground);">对话风格（选择后仅本次对话生效，不影响设置）</label>
         <div class="flex gap-2 mb-4">
-          <label class="flex-1">
-            <input type="radio" name="newStyle" value="balanced" checked class="hidden peer" />
-            <div class="border rounded-lg px-3 py-2 text-center text-xs cursor-pointer transition-colors peer-checked:border-2 peer-checked:font-bold" style="border-color: var(--vscode-input-border); color: var(--vscode-editor-foreground); background: var(--vscode-input-background);">
+          <label class="flex-1 cursor-pointer" data-style-card>
+            <input type="radio" name="newStyle" value="balanced" class="hidden" />
+            <div data-style-box class="border rounded-lg px-3 py-2 text-center text-xs" style="border-color: var(--vscode-input-border); color: var(--vscode-editor-foreground); background: var(--vscode-input-background);">
               平衡融合<span class="block text-[10px] opacity-60">毛选+叶丁</span>
             </div>
           </label>
-          <label class="flex-1">
-            <input type="radio" name="newStyle" value="maoxuan" class="hidden peer" />
-            <div class="border rounded-lg px-3 py-2 text-center text-xs cursor-pointer transition-colors peer-checked:border-2 peer-checked:font-bold" style="border-color: var(--vscode-input-border); color: var(--vscode-editor-foreground); background: var(--vscode-input-background);">
+          <label class="flex-1 cursor-pointer" data-style-card>
+            <input type="radio" name="newStyle" value="maoxuan" class="hidden" />
+            <div data-style-box class="border rounded-lg px-3 py-2 text-center text-xs" style="border-color: var(--vscode-input-border); color: var(--vscode-editor-foreground); background: var(--vscode-input-background);">
               毛选风格<span class="block text-[10px] opacity-60">原教旨主义</span>
             </div>
           </label>
-          <label class="flex-1">
-            <input type="radio" name="newStyle" value="yedinying" class="hidden peer" />
-            <div class="border rounded-lg px-3 py-2 text-center text-xs cursor-pointer transition-colors peer-checked:border-2 peer-checked:font-bold" style="border-color: var(--vscode-input-border); color: var(--vscode-editor-foreground); background: var(--vscode-input-background);">
+          <label class="flex-1 cursor-pointer" data-style-card>
+            <input type="radio" name="newStyle" value="yedinying" class="hidden" />
+            <div data-style-box class="border rounded-lg px-3 py-2 text-center text-xs" style="border-color: var(--vscode-input-border); color: var(--vscode-editor-foreground); background: var(--vscode-input-background);">
               叶丁风格<span class="block text-[10px] opacity-60">见路不走</span>
             </div>
           </label>
@@ -543,13 +597,39 @@ import DOMPurify from 'dompurify';
 
     const input = overlay.querySelector('#newTitleInput') as HTMLInputElement;
     input.focus();
-    
+
+    // 风格卡片：JS 驱动选中状态（点击必生效，视觉反馈明确）
+    const cards = overlay.querySelectorAll('[data-style-card]');
+    const applyStyleSelection = () => {
+      cards.forEach((card) => {
+        const radio = card.querySelector('input[type="radio"]') as HTMLInputElement;
+        const box = card.querySelector('[data-style-box]') as HTMLElement;
+        if (!box) return;
+        const active = !!(radio && radio.checked);
+        box.style.borderWidth = active ? '2px' : '1px';
+        box.style.borderColor = active ? 'var(--vscode-button-background)' : 'var(--vscode-input-border)';
+        box.style.fontWeight = active ? '700' : '400';
+        box.style.background = active ? 'var(--vscode-button-secondaryBackground)' : 'var(--vscode-input-background)';
+      });
+    };
+    // 默认预选：设置里保存的风格
+    const defaultRadio = overlay.querySelector(`input[name="newStyle"][value="${initialStyle}"]`) as HTMLInputElement;
+    if (defaultRadio) defaultRadio.checked = true;
+    cards.forEach((card) => {
+      card.addEventListener('click', () => {
+        const radio = card.querySelector('input[type="radio"]') as HTMLInputElement;
+        if (radio) radio.checked = true;
+        applyStyleSelection();
+      });
+    });
+    applyStyleSelection();
+
     overlay.querySelector('#cancelNewSession')?.addEventListener('click', () => overlay.remove());
     overlay.querySelector('#confirmNewSession')?.addEventListener('click', () => {
       const title = input.value.trim();
       if (title) {
         const styleRadio = overlay.querySelector('input[name="newStyle"]:checked') as HTMLInputElement;
-        const selectedStyle = styleRadio?.value || 'balanced';
+        const selectedStyle = styleRadio?.value || initialStyle;
         currentStyle = selectedStyle;
         updateStyleLabel(selectedStyle);
         sessionLoaded = false;
@@ -594,26 +674,70 @@ import DOMPurify from 'dompurify';
     overlay.className = 'fixed inset-0 flex items-center justify-center z-50';
     overlay.style.cssText = 'background: rgba(0,0,0,0.3); backdrop-filter: blur(4px);';
     overlay.innerHTML = `
-      <div class="ap-dialog w-[90%] max-w-[600px] max-h-[80%] flex flex-col">
+      <div class="ap-dialog w-[90%] max-w-[640px] max-h-[85%] flex flex-col">
         <div class="px-5 py-3 border-b flex justify-between items-center" style="border-color: var(--vscode-editorWidget-border);">
-          <span class="font-semibold text-sm" style="color: var(--vscode-editor-foreground);">对话总结报告</span>
+          <span class="font-semibold text-sm" style="color: var(--vscode-editor-foreground);">专业分析报告</span>
           <button class="text-xl leading-none transition-colors" style="color: var(--vscode-descriptionForeground);" id="closeReport">&times;</button>
         </div>
-        <div class="p-5 overflow-y-auto flex-1 text-sm whitespace-pre-wrap leading-relaxed" style="max-height:55vh; color: var(--vscode-editor-foreground);">${formatContent(report)}</div>
-        <div class="p-4 border-t flex justify-end gap-2" style="border-color: var(--line);">
-          <button id="copyReport" class="ap-btn-pill px-4 py-2 text-sm font-medium" style="background: var(--vscode-button-background); color: var(--vscode-button-foreground);">复制</button>
-          <button id="dismissReport" class="ap-btn-pill px-4 py-2 text-sm" style="background: var(--glass); border: 1px solid var(--line); color: var(--vscode-descriptionForeground);">关闭</button>
+        <div class="p-5 overflow-y-auto flex-1 text-sm whitespace-pre-wrap leading-relaxed" style="max-height:52vh; color: var(--vscode-editor-foreground);">${formatContent(report)}</div>
+        <div class="px-4 pt-2" style="color: var(--vscode-descriptionForeground); font-size: 11px;">导出格式：可直接复制到任何文档使用</div>
+        <div class="p-4 border-t flex flex-wrap justify-end gap-2" style="border-color: var(--line);">
+          <button id="copyReport" class="ap-btn-pill px-3 py-2 text-xs font-medium" style="background: var(--vscode-button-background); color: var(--vscode-button-foreground);">复制全文</button>
+          <button id="saveMdReport" class="ap-btn-pill px-3 py-2 text-xs" style="background: var(--glass); border: 1px solid var(--line); color: var(--vscode-editor-foreground);">保存 Markdown</button>
+          <button id="saveTxtReport" class="ap-btn-pill px-3 py-2 text-xs" style="background: var(--glass); border: 1px solid var(--line); color: var(--vscode-editor-foreground);">保存 TXT</button>
+          <button id="saveDocReport" class="ap-btn-pill px-3 py-2 text-xs" style="background: var(--glass); border: 1px solid var(--line); color: var(--vscode-editor-foreground);">保存 Word</button>
+          <button id="savePdfReport" class="ap-btn-pill px-3 py-2 text-xs font-medium" style="background: var(--glass); border: 1px solid var(--accent); color: var(--accent);">保存 PDF</button>
+          <button id="dismissReport" class="ap-btn-pill px-3 py-2 text-xs" style="background: var(--glass); border: 1px solid var(--line); color: var(--vscode-descriptionForeground);">关闭</button>
         </div>
+        <div id="reportSaveStatus" class="hidden px-5 pb-4 text-xs" style="color: var(--vscode-descriptionForeground);"></div>
       </div>
     `;
     document.body.appendChild(overlay);
     overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.remove(); });
-    
+
     document.getElementById('closeReport')?.addEventListener('click', () => overlay.remove());
     document.getElementById('dismissReport')?.addEventListener('click', () => overlay.remove());
-    document.getElementById('copyReport')?.addEventListener('click', () => {
-      navigator.clipboard.writeText(report);
+    document.getElementById('copyReport')?.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(report);
+        showReportSaveStatus({ success: true, message: '已复制到剪贴板，可直接粘贴使用' });
+      } catch {
+        showReportSaveStatus({ success: false, message: '复制失败，请手动选择文本复制' });
+      }
     });
+    const bindSave = (id: string, format: string) => {
+      document.getElementById(id)?.addEventListener('click', () => {
+        const btn = document.getElementById(id) as HTMLButtonElement;
+        if (btn) {
+          btn.disabled = true;
+          btn.style.opacity = '0.6';
+        }
+        showReportSaveStatus({ success: null, message: `正在生成 ${format} 文件...` });
+        vscode.postMessage({ command: 'exportReport', payload: { format } });
+      });
+    };
+    bindSave('saveMdReport', 'md');
+    bindSave('saveTxtReport', 'txt');
+    bindSave('saveDocReport', 'doc');
+    bindSave('savePdfReport', 'pdf');
+  }
+
+  function showReportSaveStatus(payload: any) {
+    const el = document.getElementById('reportSaveStatus');
+    if (!el) return;
+    if (payload.success === null) {
+      el.classList.remove('hidden');
+      el.textContent = payload.message || '';
+      return;
+    }
+    el.classList.remove('hidden');
+    if (payload.success) {
+      el.style.color = '#34c759';
+      el.textContent = `✓ 已保存：${payload.filePath || ''}（${(payload.format || '').toUpperCase()}）`;
+    } else {
+      el.style.color = '#ff3b30';
+      el.textContent = `✗ ${payload.message || '保存失败'}`;
+    }
   }
 
   function showError(message: string) {
@@ -646,20 +770,24 @@ import DOMPurify from 'dompurify';
           strategy: '战略建议', tactics: '战术行动', reflection: '反思迭代',
         };
         const phaseLabel = msg.phase ? phaseMap[msg.phase] || '' : '';
-        addMessage(msg.role, msg.content, phaseLabel);
+        try {
+          addMessage(msg.role, msg.content, phaseLabel);
+        } catch {
+          // 单条消息渲染失败不阻断其余历史
+        }
       }
     }
   }
 
   function promptNewSession() {
-    showNewSessionDialog();
+    showNewSessionDialog(defaultStyle);
   }
 
   function closeSession() {
     // 重置状态，回到欢迎页面
     sessionLoaded = false;
-    currentStyle = 'balanced';
-    updateStyleLabel('balanced');
+    currentStyle = defaultStyle;
+    updateStyleLabel(defaultStyle);
     const container = getEl('messagesContainer')!;
     container.innerHTML = `
       <div id="placeholderMsg" class="text-center py-16">
@@ -691,4 +819,7 @@ import DOMPurify from 'dompurify';
     div.textContent = str || '';
     return div.innerHTML;
   }
+
+  // 通知宿主 webview 已就绪：宿主将补发排队中的消息（如历史加载），避免过早发送丢失
+  vscode.postMessage({ command: 'webviewReady' });
 })();

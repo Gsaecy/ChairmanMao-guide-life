@@ -73,22 +73,6 @@ export class SettingsPanel {
               vscode.window.showErrorMessage(`保存设置失败: ${err}`);
             }
             break;
-
-          case 'testConnection':
-            try {
-              const config = message.payload as MaoxuanConfig;
-              // 简单测试：尝试列出模型
-              this._panel.webview.postMessage({
-                command: 'testResult',
-                payload: { success: true, message: '配置有效（API 格式兼容 OpenAI 标准）' },
-              });
-            } catch (err) {
-              this._panel.webview.postMessage({
-                command: 'testResult',
-                payload: { success: false, message: `连接失败: ${err}` },
-              });
-            }
-            break;
         }
       },
       null,
@@ -110,7 +94,7 @@ export class SettingsPanel {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${webview.cspSource}; script-src ${webview.cspSource};">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline' ${webview.cspSource}; script-src ${webview.cspSource};">
   <link href="${styleUri}" rel="stylesheet">
   <title>毛主席思想指导 - 设置</title>
 </head>

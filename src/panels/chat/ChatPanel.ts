@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import { StorageManager } from '../../backend/storage';
 import { DialogueManager } from '../../backend/dialogue';
+import { exportReportFile } from '../../backend/report';
 import { SessionData } from '../../types';
 
 export class ChatPanel {
@@ -11,6 +12,9 @@ export class ChatPanel {
   private readonly _dialogue: DialogueManager;
   private _disposables: vscode.Disposable[] = [];
   private _onDispose: (() => void) | null = null;
+  /** webview 是否已就绪；未就绪时消息入队，就绪后统一补发 */
+  private _webviewReady = false;
+  private _pendingMessages: { command: string; payload?: any }[] = [];
 
   constructor(
     extensionUri: vscode.Uri,
@@ -38,6 +42,12 @@ export class ChatPanel {
     this._panel.iconPath = vscode.Uri.joinPath(extensionUri, 'media', 'icon.svg');
     this._panel.webview.html = this._getHtmlContent();
     this._setWebviewMessageListener();
+
+    // 下发设置里保存的默认风格（就绪后送达）
+    this._post({
+      command: 'setDefaultStyle',
+      payload: this._storage.getConfig().style || 'balanced',
+    });
     
     // 监听对话事件
     this._dialogue.onMessage((text, done) => {
@@ -77,21 +87,50 @@ export class ChatPanel {
   }
 
   public newSession(): void {
-    // 弹出新建会话对话框，创建会话后即显示输入框
-    this._panel.webview.postMessage({ command: 'promptNewSession' });
+    // 弹出新建会话对话框：默认预选设置里保存的风格（不影响设置）
+    this._post({
+      command: 'promptNewSession',
+      payload: { style: this._storage.getConfig().style || 'balanced' },
+    });
   }
 
   public loadSession(session: SessionData): void {
-    this._panel.webview.postMessage({
+    this._post({
       command: 'loadSession',
       payload: session,
     });
+  }
+
+  /** 就绪感知的消息发送：未就绪先入队，就绪后补发 */
+  private _post(msg: { command: string; payload?: any }): void {
+    if (!this._webviewReady) {
+      this._pendingMessages.push(msg);
+      return;
+    }
+    this._panel.webview.postMessage(msg).then((ok) => {
+      if (!ok) this._pendingMessages.push(msg);
+    });
+  }
+
+  private _flushPending(): void {
+    const msgs = this._pendingMessages;
+    this._pendingMessages = [];
+    for (const m of msgs) {
+      this._panel.webview.postMessage(m).then((ok) => {
+        if (!ok) this._pendingMessages.push(m);
+      });
+    }
   }
 
   private _setWebviewMessageListener(): void {
     this._panel.webview.onDidReceiveMessage(
       async (message) => {
         switch (message.command) {
+          case 'webviewReady':
+            this._webviewReady = true;
+            this._flushPending();
+            break;
+
           case 'createSession':
             try {
               const session = this._dialogue.startNewSession(message.payload.title, message.payload.style);
@@ -107,7 +146,9 @@ export class ChatPanel {
           case 'sendMessage':
             try {
               this._panel.webview.postMessage({ command: 'streamStart' });
-              await this._dialogue.sendMessage(message.payload.content);
+              await this._dialogue.sendMessage(message.payload.content, {
+                webSearch: !!message.payload.webSearch,
+              });
               this._panel.webview.postMessage({ command: 'streamEnd' });
             } catch (err) {
               this._panel.webview.postMessage({
@@ -136,21 +177,58 @@ export class ChatPanel {
             this._dialogue.advancePhase();
             break;
 
-          case 'exportReport':
+          case 'prepareReport':
             try {
               const report = this._dialogue.generateReport();
-              const session = this._dialogue.getCurrentSession();
-              if (session) {
-                const filePath = this._storage.saveReport(session.id, report, 'md');
-                const doc = await vscode.workspace.openTextDocument(filePath);
-                await vscode.window.showTextDocument(doc, { viewColumn: vscode.ViewColumn.Beside });
-              }
               this._panel.webview.postMessage({
                 command: 'reportReady',
                 payload: report,
               });
             } catch (err) {
-              vscode.window.showErrorMessage(`生成报告失败: ${err}`);
+              this._panel.webview.postMessage({
+                command: 'reportSaved',
+                payload: { success: false, message: `生成报告失败: ${err}` },
+              });
+            }
+            break;
+
+          case 'exportReport':
+            try {
+              const session = this._dialogue.getCurrentSession();
+              const report = this._dialogue.generateReport();
+              if (!session) {
+                this._panel.webview.postMessage({
+                  command: 'reportSaved',
+                  payload: { success: false, message: '没有活跃的对话会话' },
+                });
+                break;
+              }
+              const fmt = (message.payload?.format || 'md') as 'md' | 'txt' | 'doc' | 'pdf';
+              const filePath = await exportReportFile(
+                report,
+                session,
+                fmt,
+                this._storage.getReportsDirPath()
+              );
+              this._panel.webview.postMessage({
+                command: 'reportSaved',
+                payload: { success: true, format: fmt, filePath },
+              });
+              // md/txt 在编辑器打开；doc/pdf 用系统默认应用打开
+              if (fmt === 'md' || fmt === 'txt') {
+                const doc = await vscode.workspace.openTextDocument(filePath);
+                await vscode.window.showTextDocument(doc, { viewColumn: vscode.ViewColumn.Beside });
+              } else {
+                await vscode.env.openExternal(vscode.Uri.file(filePath));
+              }
+            } catch (err) {
+              this._panel.webview.postMessage({
+                command: 'reportSaved',
+                payload: {
+                  success: false,
+                  message: err instanceof Error ? err.message : '生成报告失败',
+                },
+              });
             }
             break;
         }
@@ -174,7 +252,7 @@ export class ChatPanel {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${webview.cspSource}; script-src ${webview.cspSource};">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline' ${webview.cspSource}; script-src ${webview.cspSource};">
   <link href="${styleUri}" rel="stylesheet">
   <title>毛主席思想指导</title>
 </head>

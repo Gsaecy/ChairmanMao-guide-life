@@ -2,7 +2,7 @@
   "name": "ChairmanMao-guide-life",
   "displayName": "毛主席思想指导",
   "description": "以《毛泽东选集》核心思想为根基的 AI 决策指导 · AI guidance powered by Mao's Selected Works - pragmatic, clear-headed analysis",
-  "version": "0.2.8",
+  "version": "0.3.0",
   "publisher": "honor-world",
   "license": "MIT",
   "repository": {
@@ -12,53 +12,200 @@
   "engines": {
     "vscode": "^1.85.0"
   },
-  "categories": ["Other"],
-  "keywords": ["mao", "guidance", "ai", "decision"],
-  "activationEvents": ["onView:maoxuan.chatPanel"],
+  "categories": [
+    "Other"
+  ],
+  "keywords": [
+    "mao",
+    "guidance",
+    "ai",
+    "decision"
+  ],
+  "activationEvents": [
+    "onView:maoxuan.chatPanel"
+  ],
   "icon": "media/icon.png",
   "main": "./dist/extension.js",
   "contributes": {
     "viewsContainers": {
       "activitybar": [
-        { "id": "maoxuan-sidebar", "title": "毛主席思想指导", "icon": "media/icon.png" }
+        {
+          "id": "maoxuan-sidebar",
+          "title": "毛主席思想指导",
+          "icon": "media/icon.png"
+        }
       ]
     },
     "views": {
       "maoxuan-sidebar": [
-        { "type": "webview", "id": "maoxuan.chatPanel", "name": "Chat" }
+        {
+          "type": "webview",
+          "id": "maoxuan.chatPanel",
+          "name": "Chat"
+        }
       ]
     },
     "commands": [
-      { "command": "maoxuan-guidance.openSettings", "title": "Open Settings", "icon": "$(gear)" },
-      { "command": "maoxuan-guidance.newSession", "title": "New Session", "icon": "$(add)" },
-      { "command": "maoxuan-guidance.openChatEditor", "title": "Open Chat in Editor Tab", "icon": "$(go-to-file)" },
-      { "command": "maoxuan-guidance.exportReport", "title": "Export Report", "icon": "$(export)" },
-      { "command": "maoxuan-guidance.openChat", "title": "Open Chat", "icon": "$(comment-discussion)" },
-      { "command": "maoxuan-guidance.openHistory", "title": "Open History", "icon": "$(history)" },
-      { "command": "maoxuan-guidance.clearHistory", "title": "Clear History", "icon": "$(trash)" }
+      {
+        "command": "maoxuan-guidance.openSettings",
+        "title": "Open Settings",
+        "icon": "$(gear)"
+      },
+      {
+        "command": "maoxuan-guidance.newSession",
+        "title": "New Session",
+        "icon": "$(add)"
+      },
+      {
+        "command": "maoxuan-guidance.openChatEditor",
+        "title": "Open Chat in Editor Tab",
+        "icon": "$(go-to-file)"
+      },
+      {
+        "command": "maoxuan-guidance.exportReport",
+        "title": "Export Report",
+        "icon": "$(export)"
+      },
+      {
+        "command": "maoxuan-guidance.openChat",
+        "title": "Open Chat",
+        "icon": "$(comment-discussion)"
+      },
+      {
+        "command": "maoxuan-guidance.openHistory",
+        "title": "Open History",
+        "icon": "$(history)"
+      },
+      {
+        "command": "maoxuan-guidance.clearHistory",
+        "title": "Clear History",
+        "icon": "$(trash)"
+      }
     ],
     "menus": {
       "view/title": [
-        { "command": "maoxuan-guidance.newSession", "when": "view == maoxuan.chatPanel", "group": "navigation" },
-        { "command": "maoxuan-guidance.exportReport", "when": "view == maoxuan.chatPanel", "group": "navigation" },
-        { "command": "maoxuan-guidance.openChatEditor", "when": "view == maoxuan.chatPanel", "group": "navigation" },
-        { "command": "maoxuan-guidance.openSettings", "when": "view == maoxuan.chatPanel", "group": "navigation" }
+        {
+          "command": "maoxuan-guidance.newSession",
+          "when": "view == maoxuan.chatPanel",
+          "group": "navigation"
+        },
+        {
+          "command": "maoxuan-guidance.exportReport",
+          "when": "view == maoxuan.chatPanel",
+          "group": "navigation"
+        },
+        {
+          "command": "maoxuan-guidance.openChatEditor",
+          "when": "view == maoxuan.chatPanel",
+          "group": "navigation"
+        },
+        {
+          "command": "maoxuan-guidance.openSettings",
+          "when": "view == maoxuan.chatPanel",
+          "group": "navigation"
+        }
       ]
     },
     "configuration": {
       "title": "毛主席思想指导",
       "properties": {
-        "maoxuan.apiKey": { "type": "string", "default": "", "description": "API Key (DeepSeek or OpenAI-compatible)" },
-        "maoxuan.provider": { "type": "string", "default": "deepseek", "enum": ["deepseek","openai","dashscope","moonshot","glm","siliconflow","custom"], "enumDescriptions": ["DeepSeek 官方","OpenAI 官方","阿里云百炼 DashScope","月之暗面 Kimi","智谱 GLM","硅基流动 SiliconFlow","自定义（OpenAI 兼容）"], "description": "AI 供应商" },
-        "maoxuan.apiBaseUrl": { "type": "string", "default": "https://api.deepseek.com", "description": "API Base URL" },
-        "maoxuan.model": { "type": "string", "default": "deepseek-chat", "description": "Model name" },
-        "maoxuan.storagePath": { "type": "string", "default": "", "description": "Storage path" },
-        "maoxuan.webSearchEnabled": { "type": "boolean", "default": true, "description": "Enable web search" },
-        "maoxuan.searchApiKey": { "type": "string", "default": "", "description": "Search API Key" },
-        "maoxuan.searchEngine": { "type": "string", "default": "serpapi", "enum": ["serpapi","bing","anysearch"], "enumDescriptions": ["SerpAPI","Bing","AnySearch"], "description": "Search engine" },
-        "maoxuan.temperature": { "type": "number", "default": 0.7, "minimum": 0, "maximum": 2, "description": "Temperature (0-2)" },
-        "maoxuan.maxTokens": { "type": "number", "default": 4096, "minimum": 256, "maximum": 32768, "description": "Max tokens" },
-        "maoxuan.style": { "type": "string", "default": "balanced", "enum": ["maoxuan","yedinying","balanced"], "enumDescriptions": ["Mao Thought","Ye/Ding method","Balanced"], "description": "Style" }
+        "maoxuan.apiKey": {
+          "type": "string",
+          "default": "",
+          "description": "API Key (DeepSeek or OpenAI-compatible)"
+        },
+        "maoxuan.provider": {
+          "type": "string",
+          "default": "deepseek",
+          "enum": [
+            "deepseek",
+            "openai",
+            "dashscope",
+            "moonshot",
+            "glm",
+            "siliconflow",
+            "custom"
+          ],
+          "enumDescriptions": [
+            "DeepSeek 官方",
+            "OpenAI 官方",
+            "阿里云百炼 DashScope",
+            "月之暗面 Kimi",
+            "智谱 GLM",
+            "硅基流动 SiliconFlow",
+            "自定义（OpenAI 兼容）"
+          ],
+          "description": "AI 供应商"
+        },
+        "maoxuan.apiBaseUrl": {
+          "type": "string",
+          "default": "https://api.deepseek.com",
+          "description": "API Base URL"
+        },
+        "maoxuan.model": {
+          "type": "string",
+          "default": "deepseek-chat",
+          "description": "Model name"
+        },
+        "maoxuan.storagePath": {
+          "type": "string",
+          "default": "",
+          "description": "Storage path"
+        },
+        "maoxuan.webSearchEnabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable web search"
+        },
+        "maoxuan.searchApiKey": {
+          "type": "string",
+          "default": "",
+          "description": "Search API Key"
+        },
+        "maoxuan.searchEngine": {
+          "type": "string",
+          "default": "serpapi",
+          "enum": [
+            "serpapi",
+            "bing",
+            "anysearch"
+          ],
+          "enumDescriptions": [
+            "SerpAPI",
+            "Bing",
+            "AnySearch"
+          ],
+          "description": "Search engine"
+        },
+        "maoxuan.temperature": {
+          "type": "number",
+          "default": 0.7,
+          "minimum": 0,
+          "maximum": 2,
+          "description": "Temperature (0-2)"
+        },
+        "maoxuan.maxTokens": {
+          "type": "number",
+          "default": 4096,
+          "minimum": 256,
+          "maximum": 32768,
+          "description": "Max tokens"
+        },
+        "maoxuan.style": {
+          "type": "string",
+          "default": "balanced",
+          "enum": [
+            "maoxuan",
+            "yedinying",
+            "balanced"
+          ],
+          "enumDescriptions": [
+            "Mao Thought",
+            "Ye/Ding method",
+            "Balanced"
+          ],
+          "description": "Style"
+        }
       }
     }
   },
@@ -88,10 +235,12 @@
     "webpack-cli": "^5.1.4"
   },
   "dependencies": {
+    "@pdf-lib/fontkit": "^1.1.1",
     "cheerio": "^1.0.0-rc.12",
     "dompurify": "^3.0.8",
     "jspdf": "^2.5.1",
     "marked": "^11.1.1",
+    "pdf-lib": "^1.17.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "undici": "^5.28.4"

@@ -55,6 +55,8 @@ export interface ReportContent {
 export interface WebviewMessage {
   command: string;
   payload?: unknown;
+  /** 静默请求标记：宿主回包时原样带回，前端据此决定是否显示结果标签 */
+  silent?: boolean;
 }
 
 export interface SearchResult {
