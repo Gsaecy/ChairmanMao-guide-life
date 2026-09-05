@@ -20,6 +20,12 @@
 
 ---
 
+## What's New in v0.2.8
+
+- 🖼️ **恢复原始图标** —— 活动栏/扩展/欢迎图标全部还原为原始设计（书法风），移除线条五角星
+
+---
+
 ## What's New in v0.2.7
 
 - 🤖 **AI 供应商设置（参考扩展选择助手）** —— 供应商下拉框（DeepSeek / OpenAI / 阿里云百炼 / Kimi / 智谱 GLM / 硅基流动 / 自定义），选品牌自动填充 API 地址与模型，模型支持下拉选择
@@ -148,7 +154,7 @@ Mao's Thought Guidance is a VS Code extension that uses Mao's Selected Works cor
 
 ### 1. Install
 ```bash
-code --install-extension ChairmanMao-guide-life-0.2.7.vsix
+code --install-extension ChairmanMao-guide-life-0.2.8.vsix
 ```
 
 ### 2. Configure API
@@ -205,6 +211,9 @@ MIT
 ---
 
 ## Changelog
+
+### v0.2.8
+- 恢复原始图标（活动栏/扩展/欢迎图标还原为原始设计）
 
 ### v0.2.7
 - AI 供应商下拉框（6 家预设 + 自定义），选品牌自动填 API 地址与模型
