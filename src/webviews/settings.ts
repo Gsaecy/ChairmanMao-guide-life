@@ -13,7 +13,7 @@ import './globals.css';
   function renderApp() {
     app.innerHTML = `
       <div class="p-4 max-w-lg mx-auto">
-        <h1 class="text-lg font-bold mb-4 pb-2" style="border-bottom: 1px solid var(--vscode-sideBar-border); color: var(--vscode-editor-foreground);">⚙ 毛选思想指导 — 设置</h1>
+        <h1 class="text-lg font-bold mb-4 pb-2" style="border-bottom: 1px solid var(--vscode-sideBar-border); color: var(--vscode-editor-foreground);">⚙ 毛主席思想指导 — 设置</h1>
 
         <!-- API 设置 -->
         <section class="mb-6">

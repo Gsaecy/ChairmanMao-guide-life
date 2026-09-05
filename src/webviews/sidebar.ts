@@ -15,7 +15,10 @@ import './globals.css';
       <div class="flex flex-col h-full" style="background: var(--vscode-sideBar-background); color: var(--vscode-editor-foreground);">
         <!-- 第一行：扩展名 + 风格模式 + API就绪状态 -->
         <div class="flex-shrink-0 px-3 py-2 flex items-center gap-2" style="border-bottom: 1px solid var(--vscode-sideBar-border);">
-          <span class="text-sm font-semibold">毛选思想指导</span>
+          <span class="flex flex-col leading-tight">
+            <span class="text-sm font-semibold">毛主席思想指导</span>
+            <span class="text-[9px]" style="color: var(--vscode-descriptionForeground);">Chairman Mao's Thought Guidance</span>
+          </span>
           <span id="styleBadge" class="text-[10px] px-1.5 py-0.5 rounded-full" style="background: var(--vscode-button-secondaryBackground); color: var(--vscode-button-secondaryForeground);">平衡融合</span>
           <span id="apiStatusBadge" class="text-[10px] px-1.5 py-0.5 rounded-full" style="background: var(--vscode-inputValidation-warningBackground); color: var(--vscode-inputValidation-warningForeground);">未配置API</span>
         </div>
@@ -50,6 +53,11 @@ import './globals.css';
             <div class="flex items-start gap-1.5 text-[10px] mb-0.5" style="color: var(--vscode-descriptionForeground);"><span class="flex-shrink-0 font-bold">2.</span><span>填入 API Key（从 platform.deepseek.com 获取）</span></div>
             <div class="flex items-start gap-1.5 text-[10px] mb-0.5" style="color: var(--vscode-descriptionForeground);"><span class="flex-shrink-0 font-bold">3.</span><span>保存后点击 ＋新建对话 开始</span></div>
             <div class="mt-2 pt-2 text-[10px] italic opacity-60" style="border-top: 1px solid var(--vscode-sideBar-border); color: var(--vscode-descriptionForeground);">&ldquo;读书是学习，使用也是学习，而且是更重要的学习。&rdquo;</div>
+            <!-- 开发者主页 / GitHub 项目 -->
+            <div class="mt-2 flex items-center justify-center gap-4 text-[10px]">
+              <a data-external href="https://hongyuguo.com" style="color: var(--vscode-textLink-foreground); text-decoration: none;">👨‍💻 开发者主页</a>
+              <a data-external href="https://github.com/Gsaecy/ChairmanMao-guide-life" style="color: var(--vscode-textLink-foreground); text-decoration: none;">⭐ GitHub 项目</a>
+            </div>
           </div>
         </div>
       </div>
@@ -73,6 +81,18 @@ import './globals.css';
     });
     document.getElementById('btnSettings')?.addEventListener('click', () => {
       vscode.postMessage({ command: 'openSettings' });
+    });
+
+    // 开发者主页 / GitHub 项目链接：拦截默认跳转，交给宿主打开外部浏览器
+    document.addEventListener('click', (e) => {
+      const target = (e.target as HTMLElement).closest('a[data-external]');
+      if (target) {
+        const url = (target as HTMLAnchorElement).href;
+        if (url) {
+          vscode.postMessage({ command: 'openExternal', payload: url });
+          e.preventDefault();
+        }
+      }
     });
   }
 

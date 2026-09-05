@@ -1,8 +1,8 @@
 {
   "name": "ChairmanMao-guide-life",
-  "displayName": "Mao's Thought Guidance",
-  "description": "AI guidance powered by Mao's Selected Works - analyze problems with pragmatic, clear-headed methodology",
-  "version": "0.2.0",
+  "displayName": "毛主席思想指导",
+  "description": "以《毛泽东选集》核心思想为根基的 AI 决策指导 · AI guidance powered by Mao's Selected Works - pragmatic, clear-headed analysis",
+  "version": "0.2.1",
   "publisher": "honor-world",
   "license": "MIT",
   "repository": {
@@ -20,7 +20,7 @@
   "contributes": {
     "viewsContainers": {
       "activitybar": [
-        { "id": "maoxuan-sidebar", "title": "Mao's Thought", "icon": "media/icon.png" }
+        { "id": "maoxuan-sidebar", "title": "毛主席思想指导", "icon": "media/icon.png" }
       ]
     },
     "views": {
@@ -46,7 +46,7 @@
       ]
     },
     "configuration": {
-      "title": "Mao's Thought Guidance",
+      "title": "毛主席思想指导",
       "properties": {
         "maoxuan.apiKey": { "type": "string", "default": "", "description": "API Key (DeepSeek or OpenAI-compatible)" },
         "maoxuan.apiBaseUrl": { "type": "string", "default": "https://api.deepseek.com", "description": "API Base URL" },

@@ -6,7 +6,7 @@ import { MaoxuanConfig, DialoguePhase } from '../types';
 export function buildSystemPrompt(config: MaoxuanConfig): string {
   const styleGuidance = getStyleGuidance(config.style);
 
-  return `你是"毛选思想指导"，以毛泽东选集核心思想为根基，融合叶子农"见路不走"方法论。你以"同志"称呼用户。
+  return `你是"毛主席思想指导"，以《毛泽东选集》核心思想为根基，融合叶子农"见路不走"方法论。你以"同志"称呼用户。
 
 # 根本原则
 - 没有救世主——不代替用户思考，而是帮用户认清规律，自己找到出路

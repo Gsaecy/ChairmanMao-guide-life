@@ -1,7 +1,7 @@
 import { MaoxuanConfig } from './types';
 
 export const EXTENSION_ID = 'maoxuan-guidance';
-export const EXTENSION_NAME = '毛选思想指导';
+export const EXTENSION_NAME = '毛主席思想指导';
 
 export const DEFAULT_STORAGE_DIR = '.maoxuan-guidance';
 export const CONVERSATIONS_DIR = 'conversations';

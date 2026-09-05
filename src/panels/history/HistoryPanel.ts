@@ -21,7 +21,7 @@ export class HistoryPanel {
 
     this._panel = vscode.window.createWebviewPanel(
       HistoryPanel.viewType,
-      '毛选思想指导 - 对话历史',
+      '毛主席思想指导 - 对话历史',
       vscode.ViewColumn.One,
       {
         enableScripts: true,
@@ -122,7 +122,7 @@ export class HistoryPanel {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${webview.cspSource}; script-src ${webview.cspSource};">
   <link href="${styleUri}" rel="stylesheet">
-  <title>毛选思想指导 - 对话历史</title>
+  <title>毛主席思想指导 - 对话历史</title>
 </head>
 <body>
   <div id="root"></div>

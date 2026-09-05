@@ -70,6 +70,12 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
         case 'openHistory':
           vscode.commands.executeCommand('maoxuan-guidance.openHistory');
           break;
+
+        case 'openExternal':
+          if (message.payload && typeof message.payload === 'string') {
+            vscode.env.openExternal(vscode.Uri.parse(message.payload));
+          }
+          break;
       }
     });
 
@@ -124,7 +130,7 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${webview.cspSource}; script-src ${webview.cspSource};">
   <link href="${styleUri}" rel="stylesheet">
-  <title>毛选思想指导</title>
+  <title>毛主席思想指导</title>
 </head>
 <body>
   <div id="root"></div>

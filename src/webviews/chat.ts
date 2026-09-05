@@ -62,7 +62,7 @@ import './globals.css';
         <!-- Top Bar: New Chat + Actions -->
         <div class="flex-shrink-0 px-4 py-2 flex items-center justify-between" style="background: var(--vscode-sideBar-background); border-bottom: 1px solid var(--vscode-sideBar-border);">
           <div class="flex items-center gap-2">
-            <span class="text-sm font-semibold" style="color: var(--vscode-editor-foreground);">毛选思想指导</span>
+            <span class="text-sm font-semibold" style="color: var(--vscode-editor-foreground);">毛主席思想指导</span>
             <span id="styleLabel" class="text-[10px] px-2 py-0.5 rounded-full" style="background: var(--vscode-button-secondaryBackground); color: var(--vscode-button-secondaryForeground);">平衡融合</span>
             <span id="phaseLabel" class="text-[10px] px-2 py-0.5 rounded-full" style="background: var(--vscode-inputValidation-infoBackground); color: var(--vscode-inputValidation-infoForeground);">就绪</span>
           </div>

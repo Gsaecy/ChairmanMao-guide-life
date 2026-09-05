@@ -81,12 +81,12 @@ export function activate(context: vscode.ExtensionContext) {
     100
   );
   statusBarItem.text = '$(comment-discussion) 毛选指导';
-  statusBarItem.tooltip = '毛选思想指导 - 开始对话';
+  statusBarItem.tooltip = '毛主席思想指导 - 开始对话';
   statusBarItem.command = 'maoxuan-guidance.openChat';
   statusBarItem.show();
   context.subscriptions.push(statusBarItem);
 
-  console.log('毛选思想指导扩展已激活');
+  console.log('毛主席思想指导扩展已激活');
 }
 
 export function deactivate() {
