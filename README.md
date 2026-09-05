@@ -20,7 +20,7 @@
 
 ---
 
-## What's New in v0.2.2
+## What's New in v0.2.3
 
 - 🐛 **修复阶段自动推进竞态** —— 此前 AI 回复完成后触发新引导流时，控制器被误置空导致流无法中止、并发混流；现改为回复完整渲染释放后再判断推进，并发时自动中止旧流
 - 🐛 **修复引导提示失效** —— 阶段过渡提示此前存为 system 角色后被过滤，AI 根本没收到；现改为用户角色正确发送，历史记录同步修正
@@ -118,7 +118,7 @@ Mao's Thought Guidance is a VS Code extension that uses Mao's Selected Works cor
 
 ### 1. Install
 ```bash
-code --install-extension ChairmanMao-guide-life-0.2.2.vsix
+code --install-extension ChairmanMao-guide-life-0.2.3.vsix
 ```
 
 ### 2. Configure API
@@ -175,6 +175,9 @@ MIT
 ---
 
 ## Changelog
+
+### v0.2.3
+- 重新发布版（与 v0.2.2 内容一致，版本号推进以强制商店端更新）
 
 ### v0.2.2
 - 修复阶段自动推进竞态（控制器误置空、并发混流）与引导提示被过滤失效
