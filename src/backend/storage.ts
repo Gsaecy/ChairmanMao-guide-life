@@ -114,7 +114,7 @@ export class StorageManager {
         createdAt: session.createdAt,
         updatedAt: session.updatedAt,
         currentPhase: session.currentPhase,
-        messageCount: session.messages.length,
+        messageCount: session.messages.filter(m => m.role !== 'system').length,
       };
     }).sort((a, b) => b.updatedAt - a.updatedAt);
   }

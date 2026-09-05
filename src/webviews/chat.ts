@@ -60,7 +60,7 @@ import './globals.css';
     app.innerHTML = `
       <div class="flex flex-col h-screen font-sans" style="background: var(--vscode-editor-background); color: var(--vscode-editor-foreground);">
         <!-- Top Bar: New Chat + Actions -->
-        <div class="flex-shrink-0 px-4 py-2 flex items-center justify-between" style="background: var(--vscode-sideBar-background); border-bottom: 1px solid var(--vscode-sideBar-border);">
+        <div class="app-topbar flex-shrink-0 px-4 py-2 flex items-center justify-between" style="background: var(--vscode-sideBar-background); border-bottom: 1px solid var(--vscode-sideBar-border);">
           <div class="flex items-center gap-2">
             <span class="text-sm font-semibold" style="color: var(--vscode-editor-foreground);">毛主席思想指导</span>
             <span id="styleLabel" class="text-[10px] px-2 py-0.5 rounded-full" style="background: var(--vscode-button-secondaryBackground); color: var(--vscode-button-secondaryForeground);">平衡融合</span>
@@ -362,6 +362,10 @@ import './globals.css';
         currentStyle = message.payload.style || 'balanced';
         updateStyleLabel(currentStyle);
         vscode.setState({ sessionId: message.payload.id });
+        {
+          const closeBtn = getEl('btnCloseSession');
+          if (closeBtn) closeBtn.classList.remove('hidden');
+        }
         break;
 
       case 'loadSession':
@@ -372,6 +376,10 @@ import './globals.css';
         currentPhase = message.payload.currentPhase;
         updatePhase(currentPhase, '');
         renderHistoryMessages(message.payload.messages);
+        {
+          const closeBtn = getEl('btnCloseSession');
+          if (closeBtn) closeBtn.classList.remove('hidden');
+        }
         break;
 
       case 'showWelcome':
@@ -386,6 +394,8 @@ import './globals.css';
         const { text, done } = message.payload;
         if (!text) break;
         if (!done) {
+          // 自愈：阶段自动推进的引导流没有 streamStart 消息，这里自动进入流式状态
+          if (!isStreaming) startStreaming();
           const bubble = getOrCreateStreamBubble();
           // ensure phase label on stream bubble
           let phaseLabel = bubble.querySelector('[data-stream-phase]') as HTMLElement;
@@ -629,6 +639,8 @@ import './globals.css';
     const inputBox = getEl('inputBox') as HTMLTextAreaElement;
     if (inputBox) inputBox.value = '';
     vscode.setState({ sessionId: null });
+    // 通知宿主清除当前会话（修复：否则导出报告仍导旧会话）
+    vscode.postMessage({ command: 'closeSession' });
   }
 
   function escapeHtml(str: string): string {

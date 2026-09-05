@@ -14,7 +14,7 @@ import './globals.css';
     app.innerHTML = `
       <div class="flex flex-col h-full" style="background: var(--vscode-sideBar-background); color: var(--vscode-editor-foreground);">
         <!-- 第一行：扩展名 + 风格模式 + API就绪状态 -->
-        <div class="flex-shrink-0 px-3 py-2 flex items-center gap-2" style="border-bottom: 1px solid var(--vscode-sideBar-border);">
+        <div class="app-topbar flex-shrink-0 px-3 py-2 flex items-center gap-2" style="border-bottom: 1px solid var(--vscode-sideBar-border);">
           <span class="flex flex-col leading-tight">
             <span class="text-sm font-semibold">毛主席思想指导</span>
             <span class="text-[9px]" style="color: var(--vscode-descriptionForeground);">Chairman Mao's Thought Guidance</span>

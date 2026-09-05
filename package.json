@@ -2,7 +2,7 @@
   "name": "ChairmanMao-guide-life",
   "displayName": "毛主席思想指导",
   "description": "以《毛泽东选集》核心思想为根基的 AI 决策指导 · AI guidance powered by Mao's Selected Works - pragmatic, clear-headed analysis",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "publisher": "honor-world",
   "license": "MIT",
   "repository": {
@@ -20,7 +20,7 @@
   "contributes": {
     "viewsContainers": {
       "activitybar": [
-        { "id": "maoxuan-sidebar", "title": "毛主席思想指导", "icon": "media/icon.png" }
+        { "id": "maoxuan-sidebar", "title": "毛主席思想指导", "icon": "media/activitybar.svg" }
       ]
     },
     "views": {

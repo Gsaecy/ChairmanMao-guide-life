@@ -79,6 +79,37 @@ html, body, #root {
   margin-top: 0.5rem;
 }
 
+/* ===== Apple 风格设置卡片（设置页专属） ===== */
+#root section {
+  border-radius: 12px;
+  border: 1px solid var(--vscode-sideBar-border);
+  padding: 16px;
+  margin-bottom: 12px !important;
+  background: var(--vscode-sideBar-background);
+  box-shadow: var(--apple-shadow-sm);
+  transition: box-shadow 0.2s ease;
+}
+#root section:hover {
+  box-shadow: var(--apple-shadow);
+}
+
+/* ===== 按钮 hover 反馈 ===== */
+button {
+  transition: opacity 0.15s ease, filter 0.15s ease;
+}
+button:hover {
+  filter: brightness(1.05);
+}
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ===== 顶部栏细节阴影 ===== */
+.app-topbar {
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
 .message-bubble-assistant ol,
 .message-bubble-assistant ul {
   padding-left: 1.25rem;

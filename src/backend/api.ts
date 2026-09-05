@@ -71,10 +71,22 @@ export function streamChat(
   const isHttps = url.protocol === 'https:';
   const httpModule = isHttps ? https : http;
 
+  // 智能拼接 chat completions 端点（修复：用户填 /v1 或完整端点时路径重复）
+  let apiPath = (url.pathname || '/').replace(/\/+$/, '');
+  if (apiPath.endsWith('/chat/completions')) {
+    // 用户已填完整端点
+  } else if (apiPath.endsWith('/v1')) {
+    apiPath += '/chat/completions';
+  } else if (apiPath === '') {
+    apiPath = '/v1/chat/completions';
+  } else {
+    apiPath += '/v1/chat/completions';
+  }
+
   const options = {
     hostname: url.hostname,
     port: url.port || (isHttps ? 443 : 80),
-    path: url.pathname ? (url.pathname.endsWith('/') ? url.pathname + 'v1/chat/completions' : url.pathname + '/v1/chat/completions') : '/v1/chat/completions',
+    path: apiPath,
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

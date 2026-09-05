@@ -122,6 +122,10 @@ export class ChatPanel {
             this._panel.webview.postMessage({ command: 'streamEnd' });
             break;
 
+          case 'closeSession':
+            this._dialogue.closeSession();
+            break;
+
           case 'advancePhase':
             this._dialogue.advancePhase();
             break;

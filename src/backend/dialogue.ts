@@ -71,6 +71,12 @@ export class DialogueManager {
       throw new Error('没有活跃的对话会话');
     }
 
+    // 中止正在进行的流（如阶段自动推进的引导流），避免并发混流
+    if (this.abortController) {
+      this.abortController.abort();
+      this.abortController = null;
+    }
+
     const config = this.storage.getConfig();
     if (!config.apiKey) {
       throw new Error('请先在设置中配置 API Key');
@@ -126,12 +132,14 @@ export class DialogueManager {
             assistantMessage
           );
 
-          // 分析是否需要推进阶段
-          this.analyzePhaseProgression(completeText);
-
+          // 先渲染完成消息，再释放控制器（修复：此前 analyzePhaseProgression 在 onMessageCallback
+          // 之前触发新流，随后 abortController 被置 null 把新流控制器抹掉，导致自动流无法中止）
           this.onMessageCallback?.(completeText, true);
           this.abortController = null;
           resolve();
+
+          // 流完全结束后再判断是否推进阶段，避免与新流竞态
+          this.analyzePhaseProgression(completeText);
         },
         (error: Error) => {
           this.abortController = null;
@@ -220,10 +228,11 @@ export class DialogueManager {
     const prompt = transitionPrompts[phase];
     if (!prompt) return;
 
-    // 作为系统消息自动推进
+    // 作为用户消息自动推进（修复：此前存为 system 角色后被 filter 排除，
+    // 引导提示根本没发给 AI，还污染历史记录）
     const sysMessage: ChatMessage = {
       id: `msg_${Date.now()}_sys`,
-      role: 'system',
+      role: 'user',
       content: prompt,
       timestamp: Date.now(),
       phase,
@@ -269,6 +278,18 @@ export class DialogueManager {
         }
       );
     });
+  }
+
+  /**
+   * 关闭当前会话（面板关闭对话时调用）
+   */
+  closeSession(): void {
+    if (this.abortController) {
+      this.abortController.abort();
+      this.abortController = null;
+    }
+    this.currentSession = null;
+    this.userMessageQueue = [];
   }
 
   /**
