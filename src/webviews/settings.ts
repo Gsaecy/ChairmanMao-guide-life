@@ -15,11 +15,22 @@ import './globals.css';
       <div class="p-4 max-w-lg mx-auto">
         <h1 class="text-lg font-bold mb-4 pb-2" style="border-bottom: 1px solid var(--vscode-sideBar-border); color: var(--vscode-editor-foreground);">⚙ 毛主席思想指导 — 设置</h1>
 
-        <!-- API 设置 -->
+        <!-- AI 供应商 -->
         <section class="mb-6">
-          <h2 class="text-sm font-bold mb-2" style="color: var(--vscode-editor-foreground);">🔑 API 设置</h2>
-          
-          <label class="block text-xs mb-1" style="color: var(--vscode-descriptionForeground);">API 服务地址</label>
+          <h2 class="text-sm font-bold mb-2" style="color: var(--vscode-editor-foreground);">🤖 AI 供应商</h2>
+
+          <label class="block text-xs mb-1" style="color: var(--vscode-descriptionForeground);">供应商</label>
+          <select id="provider" class="ap-input w-full border rounded px-3 py-1.5 text-sm mb-3">
+            <option value="deepseek">DeepSeek 官方</option>
+            <option value="openai">OpenAI 官方</option>
+            <option value="dashscope">阿里云百炼 DashScope</option>
+            <option value="moonshot">月之暗面 Kimi</option>
+            <option value="glm">智谱 GLM</option>
+            <option value="siliconflow">硅基流动 SiliconFlow</option>
+            <option value="custom">自定义（OpenAI 兼容）</option>
+          </select>
+
+          <label class="block text-xs mb-1" style="color: var(--vscode-descriptionForeground);">API 地址（选品牌自动填充；仅「自定义」需手动填）</label>
           <input id="apiBaseUrl" type="text" class="ap-input w-full border rounded px-3 py-1.5 text-sm mb-3" 
             placeholder="https://api.deepseek.com" />
 
@@ -27,9 +38,10 @@ import './globals.css';
           <input id="apiKey" type="password" class="ap-input w-full border rounded px-3 py-1.5 text-sm mb-3" 
             placeholder="sk-..." />
 
-          <label class="block text-xs mb-1" style="color: var(--vscode-descriptionForeground);">模型名称</label>
+          <label class="block text-xs mb-1" style="color: var(--vscode-descriptionForeground);">模型名称（可下拉选择，也可自定义输入）</label>
           <input id="model" type="text" class="ap-input w-full border rounded px-3 py-1.5 text-sm mb-4" 
-            placeholder="deepseek-chat" />
+            placeholder="deepseek-chat" list="modelList" />
+          <datalist id="modelList"></datalist>
 
           <button id="btnTest" class="ap-btn-pill px-4 py-1.5 text-sm w-full font-medium" style="background: var(--vscode-button-background); color: var(--vscode-button-foreground); box-shadow: 0 1px 3px rgba(0,0,0,0.12);">
             测试连接
@@ -118,6 +130,7 @@ import './globals.css';
     setEl('temperature', 'input', handleTempChange);
     setEl('webSearchEnabled', 'change', handleSearchToggle);
     setEl('style', 'change', handleStyleChange);
+    setEl('provider', 'change', handleProviderChange);
   }
 
   function setEl(id: string, event: string, handler: (e?: any) => void) {
@@ -149,9 +162,11 @@ import './globals.css';
 
   function loadConfig(config: any) {
     currentConfig = { ...config };
-    setVal('apiBaseUrl', config.apiBaseUrl || 'https://api.deepseek.com');
+    const provider = config.provider || 'deepseek';
+    setVal('provider', provider);
+    setVal('apiBaseUrl', config.apiBaseUrl || PROVIDERS[provider]?.endpoint || 'https://api.deepseek.com');
     setVal('apiKey', config.apiKey || '');
-    setVal('model', config.model || 'deepseek-chat');
+    setVal('model', config.model || (PROVIDERS[provider]?.models?.[0]) || 'deepseek-chat');
     setVal('maxTokens', String(config.maxTokens || 4096));
     setVal('temperature', String(config.temperature || 0.7));
     setVal('style', config.style || 'balanced');
@@ -163,10 +178,12 @@ import './globals.css';
     (getEl('tempValue') as HTMLElement).textContent = String(config.temperature || 0.7);
     updateStyleDesc(config.style || 'balanced');
     toggleSearchSettings(config.webSearchEnabled);
+    renderModelList(provider);
   }
 
   function collectConfig(): any {
     return {
+      provider: getVal('provider'),
       apiBaseUrl: getVal('apiBaseUrl'),
       apiKey: getVal('apiKey'),
       model: getVal('model'),
@@ -178,6 +195,34 @@ import './globals.css';
       searchEngine: getVal('searchEngine'),
       searchApiKey: getVal('searchApiKey'),
     };
+  }
+
+  // AI 供应商预设（参考扩展选择助手）
+  const PROVIDERS: Record<string, { endpoint: string; models: string[] }> = {
+    deepseek: { endpoint: 'https://api.deepseek.com', models: ['deepseek-chat', 'deepseek-reasoner'] },
+    openai: { endpoint: 'https://api.openai.com', models: ['gpt-4o-mini', 'gpt-4o', 'gpt-4.1-mini'] },
+    dashscope: { endpoint: 'https://dashscope.aliyuncs.com/compatible-mode', models: ['qwen-plus', 'qwen-turbo', 'qwen-max'] },
+    moonshot: { endpoint: 'https://api.moonshot.cn', models: ['moonshot-v1-8k', 'moonshot-v1-32k'] },
+    glm: { endpoint: 'https://open.bigmodel.cn/api/paas', models: ['glm-4-flash', 'glm-4-plus'] },
+    siliconflow: { endpoint: 'https://api.siliconflow.cn', models: ['deepseek-ai/DeepSeek-V3', 'Qwen/Qwen2.5-72B-Instruct'] },
+    custom: { endpoint: '', models: [] },
+  };
+
+  function renderModelList(provider: string) {
+    const dl = getEl('modelList');
+    if (!dl) return;
+    dl.innerHTML = (PROVIDERS[provider]?.models || [])
+      .map((m) => `<option value="${m}"></option>`)
+      .join('');
+  }
+
+  function handleProviderChange() {
+    const p = getVal('provider');
+    const info = PROVIDERS[p];
+    if (!info) return;
+    if (info.endpoint) setVal('apiBaseUrl', info.endpoint);
+    if (info.models.length) setVal('model', info.models[0]);
+    renderModelList(p);
   }
 
   function handleSave() {

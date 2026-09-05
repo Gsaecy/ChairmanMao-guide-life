@@ -8,6 +8,7 @@ export const CONVERSATIONS_DIR = 'conversations';
 export const REPORTS_DIR = 'reports';
 
 export const DEFAULT_CONFIG: MaoxuanConfig = {
+  provider: 'deepseek',
   apiKey: '',
   apiBaseUrl: 'https://api.deepseek.com',
   model: 'deepseek-chat',

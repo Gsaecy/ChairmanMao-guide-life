@@ -20,6 +20,13 @@
 
 ---
 
+## What's New in v0.2.7
+
+- 🤖 **AI 供应商设置（参考扩展选择助手）** —— 供应商下拉框（DeepSeek / OpenAI / 阿里云百炼 / Kimi / 智谱 GLM / 硅基流动 / 自定义），选品牌自动填充 API 地址与模型，模型支持下拉选择
+- 💬 **ChatGPT 风格对话页** —— 消息带头像（AI 线条星 / 用户「我」）、居中消息区、底部大圆角输入框 + 圆形发送按钮
+
+---
+
 ## What's New in v0.2.6
 
 - 💬 **GPT 风格聊天渲染** —— AI 回复完整 Markdown 渲染（标题/列表/代码块/引用/表格，DOMPurify 防注入）；用户消息纯文本转义；流式结束用完整渲染覆盖；消息内链接点击用浏览器打开
@@ -141,7 +148,7 @@ Mao's Thought Guidance is a VS Code extension that uses Mao's Selected Works cor
 
 ### 1. Install
 ```bash
-code --install-extension ChairmanMao-guide-life-0.2.6.vsix
+code --install-extension ChairmanMao-guide-life-0.2.7.vsix
 ```
 
 ### 2. Configure API
@@ -198,6 +205,10 @@ MIT
 ---
 
 ## Changelog
+
+### v0.2.7
+- AI 供应商下拉框（6 家预设 + 自定义），选品牌自动填 API 地址与模型
+- ChatGPT 风格对话页：头像、居中布局、圆形发送按钮
 
 ### v0.2.6
 - GPT 风格聊天渲染：AI 消息完整 Markdown + DOMPurify，用户消息转义，流式结束完整重渲染

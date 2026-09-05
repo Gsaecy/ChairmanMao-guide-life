@@ -108,20 +108,20 @@ import DOMPurify from 'dompurify';
         </div>
 
         <!-- Input Area (hidden in sidebar mode) -->
-        <div id="inputArea" class="flex-shrink-0 border-t px-4 py-2" style="background: var(--vscode-sideBar-background); border-color: var(--vscode-sideBar-border);">
-          <div class="flex gap-2 items-end" style="padding-left: max(0px, calc((100% - 680px) / 2)); padding-right: max(0px, calc((100% - 680px) / 2));">
+        <div id="inputArea" class="flex-shrink-0 border-t px-4 py-3" style="background: var(--vscode-sideBar-background); border-color: var(--vscode-sideBar-border);">
+          <div class="flex gap-2 items-end" style="max-width: 768px; margin: 0 auto;">
             <textarea id="inputBox" 
-              class="ap-input flex-1 resize-y border rounded px-3 py-2 text-sm"
-              style="min-height:48px;"
-              rows="3"
+              class="ap-input flex-1 resize-y rounded-2xl px-4 py-2.5 text-sm"
+              style="min-height:46px; max-height:200px;"
+              rows="2"
               placeholder="同志，请说说你面临的具体情况..."
             ></textarea>
-            <button id="btnSend" class="ap-btn-pill flex-shrink-0 px-5 py-2.5 text-sm font-semibold" style="background: var(--vscode-button-background); color: var(--vscode-button-foreground); box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
-              发送
+            <button id="btnSend" class="ap-btn-pill flex-shrink-0 w-11 h-11 flex items-center justify-center text-lg font-bold" style="background: var(--vscode-button-background); color: var(--vscode-button-foreground); box-shadow: 0 1px 3px rgba(0,0,0,0.1);" title="发送">
+              ↑
             </button>
             <button id="btnAbort" class="hidden ap-btn-pill flex-shrink-0 px-4 py-2.5 text-xs font-medium" style="background: var(--vscode-button-secondaryBackground); color: var(--vscode-button-secondaryForeground);" title="停止">停止</button>
           </div>
-          <p class="text-[10px] mt-1 opacity-40" style="padding-left: max(0px, calc((100% - 680px) / 2)); color: var(--vscode-descriptionForeground);">Enter 发送 · Shift+Enter 换行</p>
+          <p class="text-[10px] mt-1.5 text-center opacity-40" style="color: var(--vscode-descriptionForeground);">Enter 发送 · Shift+Enter 换行</p>
         </div>
 
         <!-- Usage Guide (sidebar mode only) -->
@@ -214,6 +214,16 @@ import DOMPurify from 'dompurify';
     stopStreaming();
   }
 
+  // 头像 HTML（GPT 风格）
+  function avatarHtml(role: 'user' | 'assistant'): string {
+    if (role === 'assistant') {
+      return `<div class="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0" style="background: var(--glass); border: 1px solid var(--line);">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#D23029" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"/></svg>
+      </div>`;
+    }
+    return `<div class="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 text-[11px] font-semibold" style="background: var(--vscode-button-background); color: var(--vscode-button-foreground);">我</div>`;
+  }
+
   function addMessage(role: 'user' | 'assistant', content: string, phase?: string) {
     const container = getEl('messagesContainer')!;
     
@@ -221,7 +231,8 @@ import DOMPurify from 'dompurify';
     if (placeholder) placeholder.remove();
 
     const msgDiv = document.createElement('div');
-    msgDiv.className = role === 'user' ? 'flex justify-end' : 'flex justify-start';
+    msgDiv.className = role === 'user' ? 'flex justify-end gap-2' : 'flex justify-start gap-2';
+    msgDiv.style.cssText = 'align-items: flex-start;';
     
     const phaseLabel = (role === 'assistant' && phase) 
       ? `<div class="text-[10px] mb-1 opacity-50" style="color: var(--vscode-descriptionForeground);">${phase}</div>` 
@@ -240,7 +251,10 @@ import DOMPurify from 'dompurify';
       ? escapeHtml(content).replace(/\n/g, '<br>')
       : formatMarkdown(content);
     
-    msgDiv.innerHTML = `<div class="${bubbleClass}" style="${bubbleStyle}">${phaseLabel}${rendered}</div>`;
+    const bubbleHtml = `<div class="${bubbleClass}" style="${bubbleStyle}">${phaseLabel}${rendered}</div>`;
+    msgDiv.innerHTML = role === 'assistant'
+      ? `${avatarHtml(role)}${bubbleHtml}`
+      : `${bubbleHtml}${avatarHtml(role)}`;
     
     const loading = getEl('loadingIndicator');
     if (loading) {
@@ -261,11 +275,13 @@ import DOMPurify from 'dompurify';
     }
     
     const msgDiv = document.createElement('div');
-    msgDiv.className = 'flex justify-start';
+    msgDiv.className = 'flex justify-start gap-2';
+    msgDiv.style.cssText = 'align-items: flex-start;';
     const bubble = document.createElement('div');
     bubble.className = 'md-body border rounded-2xl rounded-bl-lg px-4 py-2.5 max-w-[80%] text-sm leading-relaxed';
     bubble.style.cssText = 'background: var(--glass); backdrop-filter: blur(24px) saturate(180%); -webkit-backdrop-filter: blur(24px) saturate(180%); border-color: var(--line); color: var(--vscode-editor-foreground);';
     bubble.setAttribute('data-is-stream', 'true');
+    msgDiv.innerHTML = avatarHtml('assistant');
     msgDiv.appendChild(bubble);
     
     const loading = getEl('loadingIndicator');

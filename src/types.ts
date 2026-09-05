@@ -1,4 +1,5 @@
 export interface MaoxuanConfig {
+  provider: string; // AI 供应商: deepseek/openai/dashscope/moonshot/glm/siliconflow/custom
   apiKey: string;
   apiBaseUrl: string;
   model: string;
