@@ -197,6 +197,66 @@ button:disabled {
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
+/* ===== GPT 风格 Markdown 渲染 ===== */
+.md-body h1, .md-body h2, .md-body h3, .md-body h4 {
+  font-weight: 700;
+  margin: 0.6em 0 0.3em;
+  line-height: 1.35;
+}
+.md-body h1 { font-size: 1.2em; }
+.md-body h2 { font-size: 1.1em; }
+.md-body h3 { font-size: 1.02em; }
+.md-body h4 { font-size: 0.95em; }
+.md-body p { margin: 0.3em 0; }
+.md-body ul, .md-body ol {
+  padding-left: 1.25rem;
+  margin: 0.3em 0;
+}
+.md-body li { margin-bottom: 0.12em; }
+.md-body code {
+  background: var(--chip-bg, rgba(127, 127, 127, 0.14));
+  padding: 0.1em 0.35em;
+  border-radius: 4px;
+  font-size: 0.85em;
+  font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+}
+.md-body pre {
+  background: rgba(127, 127, 127, 0.12);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 10px 12px;
+  overflow-x: auto;
+  margin: 0.5em 0;
+}
+.md-body pre code {
+  background: transparent;
+  padding: 0;
+}
+.md-body blockquote {
+  border-left: 3px solid var(--line-strong);
+  padding-left: 0.6em;
+  margin: 0.4em 0;
+  opacity: 0.85;
+}
+.md-body table {
+  border-collapse: collapse;
+  margin: 0.5em 0;
+}
+.md-body th, .md-body td {
+  border: 1px solid var(--line);
+  padding: 4px 8px;
+  font-size: 0.9em;
+}
+.md-body a {
+  color: var(--vscode-textLink-foreground);
+}
+.md-body hr {
+  border: none;
+  border-top: 1px solid var(--line);
+  margin: 0.6em 0;
+}
+.md-body strong { font-weight: 650; }
+
 .message-bubble-assistant ol,
 .message-bubble-assistant ul {
   padding-left: 1.25rem;

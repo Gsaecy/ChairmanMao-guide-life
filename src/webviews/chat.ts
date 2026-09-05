@@ -2,6 +2,10 @@
  * 对话面板 Webview 入口 - Apple 风格简洁界面
  */
 import './globals.css';
+// marked 是 ESM/CJS 双包：TS 解析到 ESM 类型报 TS1479，webpack 按 require 条件打包 CJS，忽略即可
+// @ts-ignore TS1479: marked dual package, webpack resolves CJS via require condition
+import { marked } from 'marked';
+import DOMPurify from 'dompurify';
 
 (function () {
   const vscode = acquireVsCodeApi();
@@ -79,10 +83,6 @@ import './globals.css';
         <!-- Messages Area with Adaptive Width (max ~680px centered) -->
         <div id="messagesContainer" class="flex-1 overflow-y-auto py-3 space-y-3" style="background: var(--vscode-editor-background); padding-left: max(12px, calc((100% - 680px) / 2)); padding-right: max(12px, calc((100% - 680px) / 2));">
           <div id="placeholderMsg" class="text-center py-16">
-            <div class="inline-flex items-center justify-center w-16 h-16 rounded-full mb-3 overflow-hidden" style="background: var(--vscode-sideBar-background);">
-              <img id="welcomeIcon" src="" alt="★" style="width:36px; height:36px; object-fit:contain;" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"/>
-              <span id="welcomeStarFallback" style="display:none; font-size:28px;">★</span>
-            </div>
             <p class="text-base font-semibold mb-1" style="color: var(--vscode-editor-foreground);">没有调查，就没有发言权</p>
             <p class="text-sm" style="color: var(--vscode-descriptionForeground);">告诉我你面临的问题，我们一起用实事求是的方法来分析</p>
           </div>
@@ -166,6 +166,18 @@ import './globals.css';
         }
       });
     }
+
+    // Markdown 链接：拦截默认跳转，交给宿主打开外部浏览器
+    document.addEventListener('click', (e) => {
+      const target = (e.target as HTMLElement).closest('a[href]');
+      if (target) {
+        const url = (target as HTMLAnchorElement).href;
+        if (url && !url.startsWith('#')) {
+          vscode.postMessage({ command: 'openExternal', payload: url });
+          e.preventDefault();
+        }
+      }
+    });
   }
 
   function setEl(id: string, event: string, handler: () => void) {
@@ -217,13 +229,18 @@ import './globals.css';
     
     const bubbleClass = role === 'user'
       ? 'rounded-2xl rounded-br-lg px-4 py-2.5 max-w-[85%] text-sm leading-relaxed'
-      : 'border rounded-2xl rounded-bl-lg px-4 py-2.5 max-w-[85%] text-sm leading-relaxed';
+      : 'md-body border rounded-2xl rounded-bl-lg px-4 py-2.5 max-w-[85%] text-sm leading-relaxed';
     
     const bubbleStyle = role === 'user'
       ? `background: var(--vscode-button-background); color: var(--vscode-button-foreground);`
       : `background: var(--glass); backdrop-filter: blur(24px) saturate(180%); -webkit-backdrop-filter: blur(24px) saturate(180%); border-color: var(--line); color: var(--vscode-editor-foreground);`;
     
-    msgDiv.innerHTML = `<div class="${bubbleClass}" style="${bubbleStyle}">${phaseLabel}${formatContent(content)}</div>`;
+    // GPT 风格：用户消息纯文本转义防注入，AI 消息完整 Markdown 渲染
+    const rendered = role === 'user'
+      ? escapeHtml(content).replace(/\n/g, '<br>')
+      : formatMarkdown(content);
+    
+    msgDiv.innerHTML = `<div class="${bubbleClass}" style="${bubbleStyle}">${phaseLabel}${rendered}</div>`;
     
     const loading = getEl('loadingIndicator');
     if (loading) {
@@ -246,7 +263,7 @@ import './globals.css';
     const msgDiv = document.createElement('div');
     msgDiv.className = 'flex justify-start';
     const bubble = document.createElement('div');
-    bubble.className = 'border rounded-2xl rounded-bl-lg px-4 py-2.5 max-w-[80%] text-sm leading-relaxed';
+    bubble.className = 'md-body border rounded-2xl rounded-bl-lg px-4 py-2.5 max-w-[80%] text-sm leading-relaxed';
     bubble.style.cssText = 'background: var(--glass); backdrop-filter: blur(24px) saturate(180%); -webkit-backdrop-filter: blur(24px) saturate(180%); border-color: var(--line); color: var(--vscode-editor-foreground);';
     bubble.setAttribute('data-is-stream', 'true');
     msgDiv.appendChild(bubble);
@@ -261,12 +278,22 @@ import './globals.css';
   }
 
   function formatContent(text: string): string {
-    // 渲染 Markdown 基本格式
+    // 流式轻量渲染（Markdown 基础格式，避免不完整语法闪烁）
     return text
       .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
       .replace(/\*(.*?)\*/g, '<em>$1</em>')
       .replace(/`(.*?)`/g, '<code class="bg-gray-100 px-1 rounded text-sm text-brand-700">$1</code>')
       .replace(/\n/g, '<br>');
+  }
+
+  // GPT 风格：完整 Markdown 渲染（流式结束/历史消息用），DOMPurify 防 XSS
+  function formatMarkdown(text: string): string {
+    try {
+      const html = marked.parse(text, { async: false }) as string;
+      return DOMPurify.sanitize(html);
+    } catch {
+      return formatContent(text);
+    }
   }
 
   function startStreaming() {
@@ -430,7 +457,8 @@ import './globals.css';
             // 使用累积的 streamingBuffer 而非 text，确保内容完整
             const fullText = streamingBuffer || text;
             const clean = filterGarbled(fullText);
-            streamBubble.innerHTML = formatContent(clean);
+            // GPT 风格：流式结束用完整 Markdown 渲染覆盖轻量渲染
+            streamBubble.innerHTML = formatMarkdown(clean);
           }
           streamingBuffer = '';
         }
@@ -619,10 +647,6 @@ import './globals.css';
     const container = getEl('messagesContainer')!;
     container.innerHTML = `
       <div id="placeholderMsg" class="text-center py-16">
-        <div class="inline-flex items-center justify-center w-16 h-16 rounded-full mb-3 overflow-hidden" style="background: var(--vscode-sideBar-background);">
-          <img id="welcomeIcon" src="" alt="★" style="width:36px; height:36px; object-fit:contain;" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"/>
-          <span id="welcomeStarFallback" style="display:none; font-size:28px;">★</span>
-        </div>
         <p class="text-base font-semibold mb-1" style="color: var(--vscode-editor-foreground);">没有调查，就没有发言权</p>
         <p class="text-sm" style="color: var(--vscode-descriptionForeground);">告诉我你面临的问题，我们一起用实事求是的方法来分析</p>
       </div>

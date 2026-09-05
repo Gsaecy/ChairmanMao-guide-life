@@ -20,6 +20,14 @@
 
 ---
 
+## What's New in v0.2.6
+
+- 💬 **GPT 风格聊天渲染** —— AI 回复完整 Markdown 渲染（标题/列表/代码块/引用/表格，DOMPurify 防注入）；用户消息纯文本转义；流式结束用完整渲染覆盖；消息内链接点击用浏览器打开
+- 📋 **GPT 风格历史记录** —— 相对时间显示（刚刚/x 分钟前/昨天）、每条对话显示首条消息预览摘要
+- 🚫 移除主页与聊天欢迎区的图标展示
+
+---
+
 ## What's New in v0.2.5
 
 - 🧠 **AI 沙盒质检** —— 请求源头关闭思考模式（DeepSeek `thinking: {type: "disabled"}`）；输出经质检关卡清洗（`<think>` 思考块、R1 思考标记、寒暄前缀）后才回传界面；`finish_reason=length` 截断残留同样清洗
@@ -133,7 +141,7 @@ Mao's Thought Guidance is a VS Code extension that uses Mao's Selected Works cor
 
 ### 1. Install
 ```bash
-code --install-extension ChairmanMao-guide-life-0.2.5.vsix
+code --install-extension ChairmanMao-guide-life-0.2.6.vsix
 ```
 
 ### 2. Configure API
@@ -190,6 +198,11 @@ MIT
 ---
 
 ## Changelog
+
+### v0.2.6
+- GPT 风格聊天渲染：AI 消息完整 Markdown + DOMPurify，用户消息转义，流式结束完整重渲染
+- 历史记录：相对时间显示 + 首条消息预览摘要
+- 移除主页与聊天欢迎区图标
 
 ### v0.2.5
 - AI 沙盒质检：源头关思考模式 + 输出清洗（思考块/寒暄前缀/截断残留）

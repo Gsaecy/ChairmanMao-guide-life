@@ -130,7 +130,7 @@ export class StorageManager {
   /**
    * 获取所有会话列表
    */
-  listSessions(): { id: string; title: string; createdAt: number; updatedAt: number; currentPhase: string; messageCount: number }[] {
+  listSessions(): { id: string; title: string; createdAt: number; updatedAt: number; currentPhase: string; messageCount: number; preview: string }[] {
     const dir = this.getConversationsDir();
     if (!fs.existsSync(dir)) return [];
     
@@ -138,6 +138,9 @@ export class StorageManager {
     return files.map(f => {
       const data = fs.readFileSync(path.join(dir, f), 'utf-8');
       const session: SessionData = JSON.parse(data);
+      // GPT 风格：预览摘要取首条用户消息前 60 字
+      const firstUser = session.messages.find(m => m.role === 'user');
+      const preview = firstUser ? firstUser.content.slice(0, 60) : '';
       return {
         id: session.id,
         title: session.title,
@@ -145,6 +148,7 @@ export class StorageManager {
         updatedAt: session.updatedAt,
         currentPhase: session.currentPhase,
         messageCount: session.messages.filter(m => m.role !== 'system').length,
+        preview,
       };
     }).sort((a, b) => b.updatedAt - a.updatedAt);
   }

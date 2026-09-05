@@ -126,6 +126,12 @@ export class ChatPanel {
             this._dialogue.closeSession();
             break;
 
+          case 'openExternal':
+            if (message.payload && typeof message.payload === 'string') {
+              vscode.env.openExternal(vscode.Uri.parse(message.payload));
+            }
+            break;
+
           case 'advancePhase':
             this._dialogue.advancePhase();
             break;

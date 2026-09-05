@@ -38,11 +38,7 @@ import './globals.css';
 
         <!-- 主页：副标题 → 功能介绍 → 使用说明 → 赞助与开发链接 -->
         <div class="flex-1 overflow-y-auto flex flex-col items-center px-3 pb-3 text-center" style="min-height: 0;">
-          <div class="mt-2 mb-2 flex-shrink-0">
-            <img id="welcomeIcon" src="" alt="★" style="width:52px; height:52px; object-fit:contain;" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"/>
-            <span id="welcomeStarFallback" style="display:none; font-size:36px; color: var(--vscode-editor-foreground);">★</span>
-          </div>
-          <p class="text-sm font-semibold mb-1" style="color: var(--vscode-editor-foreground);">没有调查，就没有发言权</p>
+          <p class="text-sm font-semibold mt-3 mb-1" style="color: var(--vscode-editor-foreground);">没有调查，就没有发言权</p>
           <p class="text-xs mb-3" style="color: var(--vscode-descriptionForeground);">告诉我你面临的问题，我们一起用实事求是的方法来分析</p>
 
           <!-- 功能介绍 -->

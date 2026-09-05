@@ -52,12 +52,11 @@ import './globals.css';
         <div class="flex justify-between items-start">
           <div class="flex-1 min-w-0">
             <h3 class="text-sm font-semibold mb-1 truncate" style="color: var(--vscode-editor-foreground);">${escapeHtml(session.title || '未命名对话')}</h3>
-            <p class="text-xs" style="color: var(--vscode-descriptionForeground);">
-              创建：${escapeHtml(formatDate(session.createdAt))} 
-              ${session.updatedAt ? `· 更新：${escapeHtml(formatDate(session.updatedAt))}` : ''}
+            <p class="text-xs" style="color: var(--vscode-descriptionForeground); opacity: 0.9;">
+              ${escapeHtml(session.preview || '')}${session.preview ? '…' : ''}
             </p>
-            <p class="text-xs mt-1" style="color: var(--vscode-descriptionForeground); opacity: 0.8;">
-              阶段：${escapeHtml(getPhaseName(session.currentPhase))} · ${session.messageCount || 0} 条消息
+            <p class="text-[10px] mt-1.5" style="color: var(--vscode-descriptionForeground); opacity: 0.75;">
+              ${escapeHtml(formatRelativeTime(session.updatedAt || session.createdAt))} · 阶段：${escapeHtml(getPhaseName(session.currentPhase))} · ${session.messageCount || 0} 条消息
             </p>
           </div>
           <div class="flex flex-col gap-1.5 flex-shrink-0 ml-2">
@@ -131,6 +130,16 @@ import './globals.css';
     const h = String(d.getHours()).padStart(2, '0');
     const min = String(d.getMinutes()).padStart(2, '0');
     return `${y}-${m}-${day} ${h}:${min}`;
+  }
+
+  // GPT 风格：相对时间显示
+  function formatRelativeTime(timestamp: number): string {
+    const diff = Date.now() - timestamp;
+    if (diff < 60 * 1000) return '刚刚';
+    if (diff < 3600 * 1000) return `${Math.floor(diff / 60000)} 分钟前`;
+    if (diff < 24 * 3600 * 1000) return `${Math.floor(diff / 3600000)} 小时前`;
+    if (diff < 48 * 3600 * 1000) return '昨天';
+    return formatDate(timestamp);
   }
 
   function getPhaseName(phase: string): string {
