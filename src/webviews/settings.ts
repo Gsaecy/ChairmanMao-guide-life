@@ -20,18 +20,18 @@ import './globals.css';
           <h2 class="text-sm font-bold mb-2" style="color: var(--vscode-editor-foreground);">🔑 API 设置</h2>
           
           <label class="block text-xs mb-1" style="color: var(--vscode-descriptionForeground);">API 服务地址</label>
-          <input id="apiBaseUrl" type="text" class="w-full border rounded px-3 py-1.5 text-sm mb-3 focus:outline-none" style="background: var(--vscode-input-background); color: var(--vscode-input-foreground); border-color: var(--vscode-input-border); box-shadow: 0 1px 3px rgba(0,0,0,0.08);" 
+          <input id="apiBaseUrl" type="text" class="ap-input w-full border rounded px-3 py-1.5 text-sm mb-3" 
             placeholder="https://api.deepseek.com" />
 
           <label class="block text-xs mb-1" style="color: var(--vscode-descriptionForeground);">API Key</label>
-          <input id="apiKey" type="password" class="w-full border rounded px-3 py-1.5 text-sm mb-3 focus:outline-none" style="background: var(--vscode-input-background); color: var(--vscode-input-foreground); border-color: var(--vscode-input-border); box-shadow: 0 1px 3px rgba(0,0,0,0.08);" 
+          <input id="apiKey" type="password" class="ap-input w-full border rounded px-3 py-1.5 text-sm mb-3" 
             placeholder="sk-..." />
 
           <label class="block text-xs mb-1" style="color: var(--vscode-descriptionForeground);">模型名称</label>
-          <input id="model" type="text" class="w-full border rounded px-3 py-1.5 text-sm mb-4 focus:outline-none" style="background: var(--vscode-input-background); color: var(--vscode-input-foreground); border-color: var(--vscode-input-border); box-shadow: 0 1px 3px rgba(0,0,0,0.08);" 
+          <input id="model" type="text" class="ap-input w-full border rounded px-3 py-1.5 text-sm mb-4" 
             placeholder="deepseek-chat" />
 
-          <button id="btnTest" class="px-4 py-1.5 rounded text-sm w-full font-medium transition-colors" style="background: var(--vscode-button-background); color: var(--vscode-button-foreground); box-shadow: 0 1px 3px rgba(0,0,0,0.12);">
+          <button id="btnTest" class="ap-btn-pill px-4 py-1.5 text-sm w-full font-medium" style="background: var(--vscode-button-background); color: var(--vscode-button-foreground); box-shadow: 0 1px 3px rgba(0,0,0,0.12);">
             测试连接
           </button>
           <div id="testResult" class="hidden text-xs mt-2 p-2 rounded"></div>
@@ -48,14 +48,14 @@ import './globals.css';
           </div>
 
           <label class="block text-xs mb-1" style="color: var(--vscode-descriptionForeground);">最大 Token 数</label>
-          <input id="maxTokens" type="number" class="w-full border rounded px-3 py-1.5 text-sm mb-4 focus:outline-none" style="background: var(--vscode-input-background); color: var(--vscode-input-foreground); border-color: var(--vscode-input-border); box-shadow: 0 1px 3px rgba(0,0,0,0.08);" 
+          <input id="maxTokens" type="number" class="ap-input w-full border rounded px-3 py-1.5 text-sm mb-4" 
             placeholder="4096" />
         </section>
 
         <!-- 风格偏好 -->
         <section class="mb-6">
           <h2 class="text-sm font-bold mb-2" style="color: var(--vscode-editor-foreground);">🎨 风格偏好</h2>
-          <select id="style" class="w-full border rounded px-3 py-1.5 text-sm mb-2 focus:outline-none" style="background: var(--vscode-input-background); color: var(--vscode-input-foreground); border-color: var(--vscode-input-border); box-shadow: 0 1px 3px rgba(0,0,0,0.08);">
+          <select id="style" class="ap-input w-full border rounded px-3 py-1.5 text-sm mb-2">
             <option value="balanced">平衡融合（推荐）</option>
             <option value="maoxuan">偏重毛选原教旨主义</option>
             <option value="yedinying">偏重叶子农/丁元英方法论</option>
@@ -76,7 +76,7 @@ import './globals.css';
 
           <div id="searchSettings" class="hidden">
             <label class="block text-xs mb-1" style="color: var(--vscode-descriptionForeground);">搜索引擎（可自定义输入）</label>
-            <input id="searchEngine" type="text" class="w-full border rounded px-3 py-1.5 text-sm mb-3 focus:outline-none" style="background: var(--vscode-input-background); color: var(--vscode-input-foreground); border-color: var(--vscode-input-border); box-shadow: 0 1px 3px rgba(0,0,0,0.08);" 
+            <input id="searchEngine" type="text" class="ap-input w-full border rounded px-3 py-1.5 text-sm mb-3" 
               placeholder="serpapi / bing / anysearch / 自定义..." list="searchEngineList" />
             <datalist id="searchEngineList">
               <option value="serpapi">
@@ -85,7 +85,7 @@ import './globals.css';
             </datalist>
 
             <label class="block text-xs mb-1" style="color: var(--vscode-descriptionForeground);">搜索 API Key</label>
-            <input id="searchApiKey" type="password" class="w-full border rounded px-3 py-1.5 text-sm mb-4 focus:outline-none" style="background: var(--vscode-input-background); color: var(--vscode-input-foreground); border-color: var(--vscode-input-border); box-shadow: 0 1px 3px rgba(0,0,0,0.08);" 
+            <input id="searchApiKey" type="password" class="ap-input w-full border rounded px-3 py-1.5 text-sm mb-4" 
               placeholder="搜索 API Key" />
           </div>
         </section>
@@ -93,16 +93,16 @@ import './globals.css';
         <!-- 存储设置 -->
         <section class="mb-6">
           <h2 class="text-sm font-bold mb-2" style="color: var(--vscode-editor-foreground);">📁 存储路径（可选）</h2>
-          <input id="storagePath" type="text" class="w-full border rounded px-3 py-1.5 text-sm focus:outline-none" style="background: var(--vscode-input-background); color: var(--vscode-input-foreground); border-color: var(--vscode-input-border); box-shadow: 0 1px 3px rgba(0,0,0,0.08);" 
+          <input id="storagePath" type="text" class="ap-input w-full border rounded px-3 py-1.5 text-sm" 
             placeholder="留空使用默认路径" />
         </section>
 
         <!-- 操作按钮 -->
         <div class="flex gap-3 pt-4" style="border-top: 1px solid var(--vscode-sideBar-border);">
-          <button id="btnSave" class="flex-1 px-4 py-2 rounded text-sm font-medium transition-colors" style="background: var(--vscode-button-background); color: var(--vscode-button-foreground); box-shadow: 0 1px 3px rgba(0,0,0,0.12);">
+          <button id="btnSave" class="ap-btn-pill flex-1 px-4 py-2 text-sm font-medium" style="background: var(--vscode-button-background); color: var(--vscode-button-foreground); box-shadow: 0 1px 3px rgba(0,0,0,0.12);">
             💾 保存设置
           </button>
-          <button id="btnReset" class="px-4 py-2 rounded text-sm transition-colors" style="background: var(--vscode-button-secondaryBackground); color: var(--vscode-button-secondaryForeground);">
+          <button id="btnReset" class="ap-btn-pill px-4 py-2 text-sm" style="background: var(--vscode-button-secondaryBackground); color: var(--vscode-button-secondaryForeground);">
             ↻ 恢复默认
           </button>
         </div>

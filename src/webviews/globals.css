@@ -4,10 +4,94 @@
 
 /* ===== VSCode Theme Adaptive Base ===== */
 /* 所有颜色使用 VSCode CSS 变量，随主题自动切换 */
+/* ===== Apple 设计 tokens（参考扩展选择助手：半透明毛玻璃卡片） ===== */
+body.vscode-light {
+  --glass: rgba(255, 255, 255, 0.72);
+  --glass-hover: rgba(255, 255, 255, 0.88);
+  --line: rgba(0, 0, 0, 0.08);
+  --line-strong: rgba(0, 0, 0, 0.14);
+  --shadow-soft: 0 1px 2px rgba(0, 0, 0, 0.04), 0 8px 24px rgba(0, 0, 0, 0.06);
+  --accent: #007aff;
+  --input-bg: #ffffff;
+  --input-fg: #1d1d1f;
+  --input-ph: #98989d;
+  --input-border: rgba(0, 0, 0, 0.12);
+}
+body.vscode-dark, body.vscode-high-contrast {
+  --glass: rgba(44, 44, 46, 0.78);
+  --glass-hover: rgba(52, 52, 55, 0.9);
+  --line: rgba(255, 255, 255, 0.1);
+  --line-strong: rgba(255, 255, 255, 0.18);
+  --shadow-soft: 0 1px 2px rgba(0, 0, 0, 0.35), 0 8px 24px rgba(0, 0, 0, 0.32);
+  --accent: #0a84ff;
+  --input-bg: rgba(255, 255, 255, 0.08);
+  --input-fg: #f5f5f7;
+  --input-ph: #6e6e73;
+  --input-border: rgba(255, 255, 255, 0.14);
+}
+
 :root {
   --apple-shadow-sm: 0 2px 8px rgba(0,0,0,0.04);
   --apple-shadow: 0 4px 16px rgba(0,0,0,0.08);
   --apple-shadow-lg: 0 12px 40px rgba(0,0,0,0.12);
+}
+
+/* 半透明毛玻璃卡片（核心视觉） */
+.ap-card {
+  background: var(--glass);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  box-shadow: var(--shadow-soft);
+}
+.ap-card-hover {
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+}
+.ap-card-hover:hover {
+  transform: translateY(-1px);
+  background: var(--glass-hover);
+  border-color: var(--line-strong);
+}
+
+/* 胶囊按钮 */
+.ap-btn-pill {
+  border-radius: 980px !important;
+  transition: opacity 0.15s ease, filter 0.15s ease, transform 0.12s ease;
+}
+.ap-btn-pill:hover {
+  filter: brightness(1.06);
+}
+.ap-btn-pill:active {
+  transform: scale(0.97);
+}
+
+/* Apple 输入框（浅色白底深字 / 深色暗底浅字，杜绝白底白字） */
+.ap-input {
+  background: var(--input-bg) !important;
+  color: var(--input-fg) !important;
+  border-color: var(--input-border) !important;
+  border-radius: 10px;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.04);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.ap-input:focus {
+  outline: none;
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.15), inset 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+.ap-input::placeholder {
+  color: var(--input-ph) !important;
+}
+
+/* 玻璃弹窗（覆盖层上毛玻璃，Apple 风格） */
+.ap-dialog {
+  background: var(--glass);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.28);
 }
 
 * {
@@ -69,9 +153,9 @@ html, body, #root {
 
 .message-bubble-assistant {
   @apply rounded-2xl rounded-bl-md px-4 py-2.5 max-w-[82%] text-sm leading-relaxed;
-  background: var(--apple-card);
-  color: var(--apple-text);
-  border: 1px solid var(--apple-border-subtle);
+  background: var(--glass);
+  color: var(--vscode-editor-foreground);
+  border: 1px solid var(--line);
   box-shadow: var(--apple-shadow-sm);
 }
 
@@ -79,17 +163,20 @@ html, body, #root {
   margin-top: 0.5rem;
 }
 
-/* ===== Apple 风格设置卡片（设置页专属） ===== */
+/* ===== Apple 风格半透明卡片（设置页 section 专属） ===== */
 #root section {
-  border-radius: 12px;
-  border: 1px solid var(--vscode-sideBar-border);
+  background: var(--glass);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid var(--line);
+  border-radius: 16px;
   padding: 16px;
   margin-bottom: 12px !important;
-  background: var(--vscode-sideBar-background);
-  box-shadow: var(--apple-shadow-sm);
-  transition: box-shadow 0.2s ease;
+  box-shadow: var(--shadow-soft);
+  transition: box-shadow 0.2s ease, background 0.2s ease;
 }
 #root section:hover {
+  background: var(--glass-hover);
   box-shadow: var(--apple-shadow);
 }
 

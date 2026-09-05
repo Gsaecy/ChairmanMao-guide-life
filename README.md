@@ -20,6 +20,15 @@
 
 ---
 
+## What's New in v0.2.5
+
+- 🧠 **AI 沙盒质检** —— 请求源头关闭思考模式（DeepSeek `thinking: {type: "disabled"}`）；输出经质检关卡清洗（`<think>` 思考块、R1 思考标记、寒暄前缀）后才回传界面；`finish_reason=length` 截断残留同样清洗
+- 🔐 **API Key 安全存储** —— 迁移到系统密钥库（SecretStorage），不再落 VS Code 全局状态；旧配置自动迁移，清空即删除
+- 🖼️ **简约线条图标** —— 扩展图标/欢迎图标换为红色线条五角星，活动栏矢量 SVG 随主题自适应
+- 🎨 **完全 Apple 风格** —— 参考扩展选择助手：半透明毛玻璃卡片（`blur(24px) saturate(180%)`）、胶囊按钮、hover 微交互；主页重排为「副标题 → 功能介绍 → 使用说明 → 赞助与开发链接」
+
+---
+
 ## What's New in v0.2.4
 
 - 🖼️ **恢复原始图标** —— 扩展图标、欢迎图标、活动栏图标全部还原为原始设计，不再使用自绘线条图形
@@ -124,7 +133,7 @@ Mao's Thought Guidance is a VS Code extension that uses Mao's Selected Works cor
 
 ### 1. Install
 ```bash
-code --install-extension ChairmanMao-guide-life-0.2.4.vsix
+code --install-extension ChairmanMao-guide-life-0.2.5.vsix
 ```
 
 ### 2. Configure API
@@ -181,6 +190,12 @@ MIT
 ---
 
 ## Changelog
+
+### v0.2.5
+- AI 沙盒质检：源头关思考模式 + 输出清洗（思考块/寒暄前缀/截断残留）
+- API Key 迁移系统密钥库（SecretStorage），旧配置自动迁移
+- 简约线条图标（活动栏 SVG 主题自适应）
+- 完全 Apple 风格：半透明毛玻璃卡片 + 胶囊按钮，主页重排（副标题→功能介绍→使用说明→赞助与开发链接）
 
 ### v0.2.4
 - 恢复原始图标（扩展图标/欢迎图标/活动栏图标还原为原始设计）

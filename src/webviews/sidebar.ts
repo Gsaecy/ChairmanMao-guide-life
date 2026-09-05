@@ -23,40 +23,60 @@ import './globals.css';
           <span id="apiStatusBadge" class="text-[10px] px-1.5 py-0.5 rounded-full" style="background: var(--vscode-inputValidation-warningBackground); color: var(--vscode-inputValidation-warningForeground);">未配置API</span>
         </div>
 
-        <!-- 第二行：三个按钮 -->
+        <!-- 第二行：三个按钮（胶囊） -->
         <div class="flex-shrink-0 px-3 py-2 flex items-center gap-2" style="border-bottom: 1px solid var(--vscode-sideBar-border);">
-          <button id="btnNewChat" class="flex-1 text-xs px-3 py-1.5 rounded font-medium transition-colors" style="background: var(--vscode-button-background); color: var(--vscode-button-foreground); box-shadow: 0 1px 3px rgba(0,0,0,0.12);">
+          <button id="btnNewChat" class="ap-btn-pill flex-1 text-xs px-3 py-1.5 font-medium" style="background: var(--vscode-button-background); color: var(--vscode-button-foreground); box-shadow: 0 1px 3px rgba(0,0,0,0.12);">
             ＋ 新建对话
           </button>
-          <button id="btnHistory" class="flex-1 text-xs px-3 py-1.5 rounded transition-colors" style="background: var(--vscode-button-secondaryBackground); color: var(--vscode-button-secondaryForeground);">
+          <button id="btnHistory" class="ap-btn-pill flex-1 text-xs px-3 py-1.5" style="background: var(--glass); color: var(--vscode-editor-foreground); border: 1px solid var(--line); backdrop-filter: blur(24px) saturate(180%); -webkit-backdrop-filter: blur(24px) saturate(180%);">
             历史记录
           </button>
-          <button id="btnSettings" class="flex-1 text-xs px-3 py-1.5 rounded transition-colors" style="background: var(--vscode-button-secondaryBackground); color: var(--vscode-button-secondaryForeground);">
+          <button id="btnSettings" class="ap-btn-pill flex-1 text-xs px-3 py-1.5" style="background: var(--glass); color: var(--vscode-editor-foreground); border: 1px solid var(--line); backdrop-filter: blur(24px) saturate(180%); -webkit-backdrop-filter: blur(24px) saturate(180%);">
             设置
           </button>
         </div>
 
-        <!-- 间隔 & 图标 -->
-        <div class="flex-1 flex flex-col items-center justify-center px-3 text-center" style="min-height: 0;">
-          <div class="mt-2 mb-3 flex-shrink-0">
+        <!-- 主页：副标题 → 功能介绍 → 使用说明 → 赞助与开发链接 -->
+        <div class="flex-1 overflow-y-auto flex flex-col items-center px-3 pb-3 text-center" style="min-height: 0;">
+          <div class="mt-2 mb-2 flex-shrink-0">
             <img id="welcomeIcon" src="" alt="★" style="width:52px; height:52px; object-fit:contain;" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"/>
             <span id="welcomeStarFallback" style="display:none; font-size:36px; color: var(--vscode-editor-foreground);">★</span>
           </div>
           <p class="text-sm font-semibold mb-1" style="color: var(--vscode-editor-foreground);">没有调查，就没有发言权</p>
-          <p class="text-xs mb-4" style="color: var(--vscode-descriptionForeground);">告诉我你面临的问题，我们一起用实事求是的方法来分析</p>
+          <p class="text-xs mb-3" style="color: var(--vscode-descriptionForeground);">告诉我你面临的问题，我们一起用实事求是的方法来分析</p>
+
+          <!-- 功能介绍 -->
+          <div class="ap-card w-full text-left p-3 mb-2">
+            <p class="text-xs font-semibold mb-2" style="color: var(--vscode-editor-foreground);">✨ 功能介绍</p>
+            <div class="space-y-1">
+              <div class="flex items-start gap-1.5 text-[10px]" style="color: var(--vscode-descriptionForeground);"><span class="flex-shrink-0">💬</span><span>六阶段递进提问：了解→矛盾→条件→战略→战术→反思</span></div>
+              <div class="flex items-start gap-1.5 text-[10px]" style="color: var(--vscode-descriptionForeground);"><span class="flex-shrink-0">🎨</span><span>三种分析风格：毛选 / 叶丁 / 平衡融合（按会话绑定）</span></div>
+              <div class="flex items-start gap-1.5 text-[10px]" style="color: var(--vscode-descriptionForeground);"><span class="flex-shrink-0">📝</span><span>一键导出 Markdown 分析报告</span></div>
+              <div class="flex items-start gap-1.5 text-[10px]" style="color: var(--vscode-descriptionForeground);"><span class="flex-shrink-0">🕘</span><span>历史对话自动保存，可查看 / 搜索 / 删除</span></div>
+              <div class="flex items-start gap-1.5 text-[10px]" style="color: var(--vscode-descriptionForeground);"><span class="flex-shrink-0">🖥️</span><span>深/浅色主题自适应，Apple 风格半透明界面</span></div>
+            </div>
+          </div>
 
           <!-- 使用说明 -->
-          <div class="text-left w-full mt-3 pt-3" style="border-top: 1px solid var(--vscode-sideBar-border);">
+          <div class="ap-card w-full text-left p-3 mb-2">
             <p class="text-xs font-semibold mb-2" style="color: var(--vscode-editor-foreground);">📖 使用方法</p>
             <p class="text-[10px] mb-1" style="color: var(--vscode-textLink-foreground);"><strong>⚠️ 首次使用必须先配置 API</strong></p>
             <div class="flex items-start gap-1.5 text-[10px] mb-0.5" style="color: var(--vscode-descriptionForeground);"><span class="flex-shrink-0 font-bold">1.</span><span>点击 ⚙ 设置 进入设置页面</span></div>
             <div class="flex items-start gap-1.5 text-[10px] mb-0.5" style="color: var(--vscode-descriptionForeground);"><span class="flex-shrink-0 font-bold">2.</span><span>填入 API Key（从 platform.deepseek.com 获取）</span></div>
             <div class="flex items-start gap-1.5 text-[10px] mb-0.5" style="color: var(--vscode-descriptionForeground);"><span class="flex-shrink-0 font-bold">3.</span><span>保存后点击 ＋新建对话 开始</span></div>
-            <div class="mt-2 pt-2 text-[10px] italic opacity-60" style="border-top: 1px solid var(--vscode-sideBar-border); color: var(--vscode-descriptionForeground);">&ldquo;读书是学习，使用也是学习，而且是更重要的学习。&rdquo;</div>
-            <!-- 开发者主页 / GitHub 项目 -->
-            <div class="mt-2 flex items-center justify-center gap-4 text-[10px]">
-              <a data-external href="https://hongyuguo.com" style="color: var(--vscode-textLink-foreground); text-decoration: none;">👨‍💻 开发者主页</a>
-              <a data-external href="https://github.com/Gsaecy/ChairmanMao-guide-life" style="color: var(--vscode-textLink-foreground); text-decoration: none;">⭐ GitHub 项目</a>
+            <div class="mt-2 pt-2 text-[10px] italic opacity-60" style="border-top: 1px solid var(--line); color: var(--vscode-descriptionForeground);">&ldquo;读书是学习，使用也是学习，而且是更重要的学习。&rdquo;</div>
+          </div>
+
+          <!-- 赞助与开发链接 -->
+          <div class="ap-card w-full p-3">
+            <p class="text-xs font-semibold mb-2" style="color: var(--vscode-editor-foreground);">❤️ 赞助与支持</p>
+            <div class="space-y-1.5 text-left">
+              <a data-external href="https://hongyuguo.com" class="flex items-center gap-2 text-[10px] transition-opacity hover:opacity-70" style="color: var(--vscode-textLink-foreground); text-decoration: none;">
+                <span>👨‍💻</span><span>开发者个人主页 · hongyuguo.com</span>
+              </a>
+              <a data-external href="https://github.com/Gsaecy/ChairmanMao-guide-life" class="flex items-center gap-2 text-[10px] transition-opacity hover:opacity-70" style="color: var(--vscode-textLink-foreground); text-decoration: none;">
+                <span>⭐</span><span>GitHub 项目与赞赏</span>
+              </a>
             </div>
           </div>
         </div>

@@ -14,6 +14,7 @@ interface ChatCompletionRequest {
   temperature: number;
   max_tokens: number;
   stream: boolean;
+  thinking?: { type: string };
 }
 
 interface ChatCompletionChunk {
@@ -25,6 +26,32 @@ interface ChatCompletionChunk {
     index: number;
     finish_reason: string | null;
   }[];
+}
+
+/**
+ * 输出清洗（沙盒质检）：去思考块/思考标记残留/寒暄前缀。
+ * 流式中间块不经此清洗（避免跨块标签误伤），最终 fullText 清洗后再回传。
+ */
+export function cleanAssistantOutput(text: string): string {
+  let t = text;
+  // 完整思考块
+  t = t.replace(/<\s*(think|thinking|thought|analysis|reasoning)\s*>[\s\S]*?<\s*\/\s*\1\s*>/gi, '');
+  // 未闭合思考块（截断残留）
+  t = t.replace(/<\s*(think|thinking|thought|analysis|reasoning)\s*>[\s\S]*$/gi, '');
+  // 残留标记
+  t = t.replace(/<\s*\/?\s*(think|thinking|thought|analysis|reasoning)\s*>/gi, '');
+  // DeepSeek R1 特殊标记
+  t = t.replace(/<\|begin_of_thought\|>[\s\S]*?(<\|end_of_thought\|>|$)/g, '');
+  t = t.replace(/<\|(begin_of_thought|end_of_thought|reflection|reflection_end)\|>/g, '');
+  // 寒暄前缀（最多 5 轮防堆叠）
+  let prev = '';
+  let rounds = 0;
+  while (prev !== t && rounds < 5) {
+    prev = t;
+    rounds++;
+    t = t.replace(/^(好的|当然|没问题|以下是|以下为|回答如下|总结如下|Here is|Sure|OK|明白了)[，。:：!！\s]*/i, '');
+  }
+  return t.trim();
 }
 
 /**
@@ -63,6 +90,8 @@ export function streamChat(
     temperature: config.temperature,
     max_tokens: config.maxTokens,
     stream: true,
+    // DeepSeek 官方参数：关闭思考模式，从源头阻断思维链泄漏
+    thinking: { type: 'disabled' },
   };
 
   const bodyString = JSON.stringify(requestBody);
@@ -112,6 +141,7 @@ export function streamChat(
 
     let fullText = '';
     let buffer = '';
+    let lastFinishReason: string | null = null;
 
     res.on('data', (chunk: Buffer) => {
       // 将 Buffer 转为字符串，用 TextDecoder 确保 UTF-8 多字节字符不被截断
@@ -133,6 +163,9 @@ export function streamChat(
             const parsed: ChatCompletionChunk = JSON.parse(data);
             // 只取 content，忽略 reasoning_content（思考过程）—— 避免乱码和超长回复
             const content = parsed.choices?.[0]?.delta?.content;
+            if (parsed.choices?.[0]?.finish_reason) {
+              lastFinishReason = parsed.choices[0].finish_reason;
+            }
             if (content) {
               fullText += content;
               onChunk(content);
@@ -154,6 +187,9 @@ export function streamChat(
             const parsed: ChatCompletionChunk = JSON.parse(data);
             // 只取 content，忽略 reasoning_content
             const content = parsed.choices?.[0]?.delta?.content;
+            if (parsed.choices?.[0]?.finish_reason) {
+              lastFinishReason = parsed.choices[0].finish_reason;
+            }
             if (content) {
               fullText += content;
               onChunk(content);
@@ -161,7 +197,9 @@ export function streamChat(
           } catch {}
         }
       }
-      onComplete(fullText);
+      // 沙盒质检：全文清洗后再回传（思考块/寒暄前缀清除）
+      // finish_reason=length 截断时同样清洗残留的未闭合思考块
+      onComplete(cleanAssistantOutput(fullText));
     });
 
     res.on('error', (err: Error) => {

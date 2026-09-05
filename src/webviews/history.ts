@@ -47,7 +47,7 @@ import './globals.css';
     container.innerHTML = sessions
       .map(
         (session) => `
-      <div class="rounded-lg p-3 session-card transition-all hover:shadow-md" style="background: var(--vscode-sideBar-background); border: 1px solid var(--vscode-sideBar-border); box-shadow: 0 1px 3px rgba(0,0,0,0.08);"
+      <div class="ap-card ap-card-hover p-3 session-card"
            data-session-id="${escapeHtml(session.id)}">
         <div class="flex justify-between items-start">
           <div class="flex-1 min-w-0">
@@ -105,7 +105,7 @@ import './globals.css';
     overlay.className = 'fixed inset-0 flex items-center justify-center z-50';
     overlay.style.cssText = 'background: rgba(0,0,0,0.3); backdrop-filter: blur(4px);';
     overlay.innerHTML = `
-      <div class="rounded-lg w-[340px] p-6 shadow-xl" style="background: var(--vscode-editorWidget-background); border: 1px solid var(--vscode-editorWidget-border);">
+      <div class="ap-dialog w-[340px] p-6">
         <h3 class="text-base font-semibold mb-3" style="color: var(--vscode-editor-foreground);">确认删除</h3>
         <p class="text-sm mb-5" style="color: var(--vscode-descriptionForeground);">确定要删除这个对话吗？此操作不可恢复。</p>
         <div class="flex justify-end gap-2">

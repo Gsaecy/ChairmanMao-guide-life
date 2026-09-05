@@ -67,12 +67,12 @@ import './globals.css';
             <span id="phaseLabel" class="text-[10px] px-2 py-0.5 rounded-full" style="background: var(--vscode-inputValidation-infoBackground); color: var(--vscode-inputValidation-infoForeground);">就绪</span>
           </div>
           <div class="flex items-center gap-2">
-            <button id="btnNewSession" class="text-xs px-3 py-1.5 rounded transition-colors font-medium" style="background: var(--vscode-button-background); color: var(--vscode-button-foreground);">
+            <button id="btnNewSession" class="ap-btn-pill text-xs px-3 py-1.5 font-medium" style="background: var(--vscode-button-background); color: var(--vscode-button-foreground);">
               ＋ 新建对话
             </button>
-            <button id="btnCloseSession" class="hidden text-xs px-3 py-1.5 rounded transition-colors" style="background: var(--vscode-button-secondaryBackground); color: var(--vscode-button-secondaryForeground);" title="关闭当前对话">关闭对话</button>
-            <button id="btnHistory" class="text-xs px-3 py-1.5 rounded transition-colors" style="background: transparent; color: var(--vscode-descriptionForeground); border: 1px solid var(--vscode-sideBar-border);">历史记录</button>
-            <button id="btnSettings" class="text-xs px-3 py-1.5 rounded transition-colors" style="background: transparent; color: var(--vscode-descriptionForeground); border: 1px solid var(--vscode-sideBar-border);">设置</button>
+            <button id="btnCloseSession" class="hidden ap-btn-pill text-xs px-3 py-1.5" style="background: var(--vscode-button-secondaryBackground); color: var(--vscode-button-secondaryForeground);" title="关闭当前对话">关闭对话</button>
+            <button id="btnHistory" class="ap-btn-pill text-xs px-3 py-1.5" style="background: var(--glass); backdrop-filter: blur(24px) saturate(180%); -webkit-backdrop-filter: blur(24px) saturate(180%); color: var(--vscode-descriptionForeground); border: 1px solid var(--line);">历史记录</button>
+            <button id="btnSettings" class="ap-btn-pill text-xs px-3 py-1.5" style="background: var(--glass); backdrop-filter: blur(24px) saturate(180%); -webkit-backdrop-filter: blur(24px) saturate(180%); color: var(--vscode-descriptionForeground); border: 1px solid var(--line);">设置</button>
           </div>
         </div>
 
@@ -111,15 +111,15 @@ import './globals.css';
         <div id="inputArea" class="flex-shrink-0 border-t px-4 py-2" style="background: var(--vscode-sideBar-background); border-color: var(--vscode-sideBar-border);">
           <div class="flex gap-2 items-end" style="padding-left: max(0px, calc((100% - 680px) / 2)); padding-right: max(0px, calc((100% - 680px) / 2));">
             <textarea id="inputBox" 
-              class="flex-1 resize-y border rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 transition-colors"
-              style="min-height:48px; background: var(--vscode-input-background); color: var(--vscode-input-foreground); border-color: var(--vscode-input-border);"
+              class="ap-input flex-1 resize-y border rounded px-3 py-2 text-sm"
+              style="min-height:48px;"
               rows="3"
               placeholder="同志，请说说你面临的具体情况..."
             ></textarea>
-            <button id="btnSend" class="flex-shrink-0 px-5 py-2.5 rounded text-sm font-semibold transition-colors" style="background: var(--vscode-button-background); color: var(--vscode-button-foreground); box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+            <button id="btnSend" class="ap-btn-pill flex-shrink-0 px-5 py-2.5 text-sm font-semibold" style="background: var(--vscode-button-background); color: var(--vscode-button-foreground); box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
               发送
             </button>
-            <button id="btnAbort" class="hidden flex-shrink-0 px-4 py-2.5 rounded text-xs font-medium transition-colors" style="background: var(--vscode-button-secondaryBackground); color: var(--vscode-button-secondaryForeground);" title="停止">停止</button>
+            <button id="btnAbort" class="hidden ap-btn-pill flex-shrink-0 px-4 py-2.5 text-xs font-medium" style="background: var(--vscode-button-secondaryBackground); color: var(--vscode-button-secondaryForeground);" title="停止">停止</button>
           </div>
           <p class="text-[10px] mt-1 opacity-40" style="padding-left: max(0px, calc((100% - 680px) / 2)); color: var(--vscode-descriptionForeground);">Enter 发送 · Shift+Enter 换行</p>
         </div>
@@ -221,7 +221,7 @@ import './globals.css';
     
     const bubbleStyle = role === 'user'
       ? `background: var(--vscode-button-background); color: var(--vscode-button-foreground);`
-      : `background: var(--vscode-sideBar-background); border-color: var(--vscode-sideBar-border); color: var(--vscode-editor-foreground);`;
+      : `background: var(--glass); backdrop-filter: blur(24px) saturate(180%); -webkit-backdrop-filter: blur(24px) saturate(180%); border-color: var(--line); color: var(--vscode-editor-foreground);`;
     
     msgDiv.innerHTML = `<div class="${bubbleClass}" style="${bubbleStyle}">${phaseLabel}${formatContent(content)}</div>`;
     
@@ -247,7 +247,7 @@ import './globals.css';
     msgDiv.className = 'flex justify-start';
     const bubble = document.createElement('div');
     bubble.className = 'border rounded-2xl rounded-bl-lg px-4 py-2.5 max-w-[80%] text-sm leading-relaxed';
-    bubble.style.cssText = 'background: var(--vscode-sideBar-background); border-color: var(--vscode-sideBar-border); color: var(--vscode-editor-foreground);';
+    bubble.style.cssText = 'background: var(--glass); backdrop-filter: blur(24px) saturate(180%); -webkit-backdrop-filter: blur(24px) saturate(180%); border-color: var(--line); color: var(--vscode-editor-foreground);';
     bubble.setAttribute('data-is-stream', 'true');
     msgDiv.appendChild(bubble);
     
@@ -296,6 +296,9 @@ import './globals.css';
       .replace(/<\|end_of_thought\|>/g, '')
       .replace(/<\|reflection\|>/g, '')
       .replace(/<\|reflection_end\|>/g, '')
+      // 去除 <think> 系思考块（完整与未闭合）
+      .replace(/<\s*(think|thinking|thought|analysis|reasoning)\s*>[\s\S]*?(<\s*\/\s*\1\s*>|$)/gi, '')
+      .replace(/<\s*\/?\s*(think|thinking|thought|analysis|reasoning)\s*>/gi, '')
       // 清理连续空行
       .replace(/\n{3,}/g, '\n\n')
       .trim();
@@ -460,10 +463,10 @@ import './globals.css';
     overlay.className = 'fixed inset-0 flex items-center justify-center z-50';
     overlay.style.cssText = 'background: rgba(0,0,0,0.3); backdrop-filter: blur(4px);';
     overlay.innerHTML = `
-      <div class="rounded-xl w-[400px] p-6 shadow-lg" style="background: var(--vscode-editorWidget-background); border: 1px solid var(--vscode-editorWidget-border);">
+      <div class="ap-dialog w-[400px] p-6">
         <h3 class="text-base font-semibold mb-4" style="color: var(--vscode-editor-foreground);">新建对话</h3>
         <label class="block text-xs mb-1" style="color: var(--vscode-descriptionForeground);">对话标题</label>
-        <input id="newTitleInput" type="text" class="w-full border rounded px-3 py-2 text-sm focus:outline-none mb-4" style="background: var(--vscode-input-background); color: var(--vscode-input-foreground); border-color: var(--vscode-input-border);" placeholder="输入对话标题..." />
+        <input id="newTitleInput" type="text" class="ap-input w-full border rounded px-3 py-2 text-sm mb-4" placeholder="输入对话标题..." />
         <label class="block text-xs mb-1" style="color: var(--vscode-descriptionForeground);">对话风格（选择后本次对话不可更改）</label>
         <div class="flex gap-2 mb-4">
           <label class="flex-1">
@@ -486,8 +489,8 @@ import './globals.css';
           </label>
         </div>
         <div class="flex justify-end gap-2">
-          <button id="cancelNewSession" class="px-4 py-2 text-sm rounded transition-colors" style="background: transparent; color: var(--vscode-descriptionForeground);">取消</button>
-          <button id="confirmNewSession" class="px-4 py-2 text-sm rounded font-medium transition-colors" style="background: var(--vscode-button-background); color: var(--vscode-button-foreground);">开始对话</button>
+          <button id="cancelNewSession" class="ap-btn-pill px-4 py-2 text-sm" style="background: var(--glass); border: 1px solid var(--line); color: var(--vscode-descriptionForeground);">取消</button>
+          <button id="confirmNewSession" class="ap-btn-pill px-4 py-2 text-sm font-medium" style="background: var(--vscode-button-background); color: var(--vscode-button-foreground);">开始对话</button>
         </div>
       </div>
     `;
@@ -547,15 +550,15 @@ import './globals.css';
     overlay.className = 'fixed inset-0 flex items-center justify-center z-50';
     overlay.style.cssText = 'background: rgba(0,0,0,0.3); backdrop-filter: blur(4px);';
     overlay.innerHTML = `
-      <div class="rounded-xl w-[90%] max-w-[600px] max-h-[80%] flex flex-col shadow-lg" style="background: var(--vscode-editorWidget-background); border: 1px solid var(--vscode-editorWidget-border);">
+      <div class="ap-dialog w-[90%] max-w-[600px] max-h-[80%] flex flex-col">
         <div class="px-5 py-3 border-b flex justify-between items-center" style="border-color: var(--vscode-editorWidget-border);">
           <span class="font-semibold text-sm" style="color: var(--vscode-editor-foreground);">对话总结报告</span>
           <button class="text-xl leading-none transition-colors" style="color: var(--vscode-descriptionForeground);" id="closeReport">&times;</button>
         </div>
         <div class="p-5 overflow-y-auto flex-1 text-sm whitespace-pre-wrap leading-relaxed" style="max-height:55vh; color: var(--vscode-editor-foreground);">${formatContent(report)}</div>
-        <div class="p-4 border-t flex justify-end gap-2" style="border-color: var(--vscode-editorWidget-border);">
-          <button id="copyReport" class="px-4 py-2 rounded text-sm font-medium transition-colors" style="background: var(--vscode-button-background); color: var(--vscode-button-foreground);">复制</button>
-          <button id="dismissReport" class="px-4 py-2 rounded text-sm transition-colors" style="background: var(--vscode-button-secondaryBackground); color: var(--vscode-button-secondaryForeground);">关闭</button>
+        <div class="p-4 border-t flex justify-end gap-2" style="border-color: var(--line);">
+          <button id="copyReport" class="ap-btn-pill px-4 py-2 text-sm font-medium" style="background: var(--vscode-button-background); color: var(--vscode-button-foreground);">复制</button>
+          <button id="dismissReport" class="ap-btn-pill px-4 py-2 text-sm" style="background: var(--glass); border: 1px solid var(--line); color: var(--vscode-descriptionForeground);">关闭</button>
         </div>
       </div>
     `;

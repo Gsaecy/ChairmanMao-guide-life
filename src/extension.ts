@@ -10,9 +10,10 @@ let chatViewProvider: ChatViewProvider | undefined;
 let settingsPanel: SettingsPanel | undefined;
 let historyPanel: HistoryPanel | undefined;
 
-export function activate(context: vscode.ExtensionContext) {
-  // 初始化核心服务
+export async function activate(context: vscode.ExtensionContext) {
+  // 初始化核心服务（先迁移/加载 SecretStorage 中的 API Key）
   storageManager = new StorageManager(context);
+  await storageManager.init();
   dialogueManager = new DialogueManager(storageManager);
 
   // 注册侧边栏 WebviewView Provider —— 解决侧边栏空白问题
